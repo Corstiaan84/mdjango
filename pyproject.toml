@@ -1,0 +1,50 @@
+[project]
+name = "django-mdjango"
+version = "0.1.0.dev0"
+description = "A reusable, drop-in markdown-documentation Django app: point it at a tree of markdown and get a themed docs site, served at runtime or exported static."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "Django>=5.2",
+    "Markdown>=3.6",
+    "pymdown-extensions>=10",
+    "Pygments>=2.17",
+    "django-cotton>=1.5",
+]
+
+[project.optional-dependencies]
+# Consumers don't need these; they ship precompiled assets. Present for building the theme.
+dev = [
+    "pytest>=8",
+    "pytest-django>=4.8",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# hatchling ships everything under the `mdjango/` package — templates, the compiled stylesheet,
+# and the vendored JS in `static/`. The theme *source* (`theme/src/`, the build script) and the
+# example project and tests are build-time / dev-only, so the wheel excludes them; the sdist keeps
+# them so a downstream can rebuild the stylesheet from source.
+[tool.hatch.build.targets.wheel]
+packages = ["mdjango"]
+exclude = ["**/tests/**", "**/tests.py", "**/conftest.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# DJ = flake8-django (stack convention: Django lints on a Django codebase).
+select = ["E", "F", "I", "UP", "B", "DJ"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "example.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+# business tests live beside the code (mdjango/features/{concept}/tests.py); view/integration
+# tests in mdjango/tests/ — both under the package, so one testpath covers them.
+testpaths = ["mdjango"]
+pythonpath = ["."]

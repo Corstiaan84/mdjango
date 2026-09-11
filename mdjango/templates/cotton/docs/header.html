@@ -1,0 +1,18 @@
+<header class="docs-header">
+  <div class="docs-header-inner">
+    <button class="docs-hamburger" type="button" data-action="disclosure#toggle" aria-label="Open navigation">≡</button>
+    <a href="{{ conf.home_url }}" class="docs-wordmark">{{ conf.brand }}</a>
+    <c-docs.breadcrumb :items="breadcrumb" />
+    <div class="docs-header-spacer"></div>
+    <button class="docs-search-trigger" type="button" data-action="search#open">
+      <span class="k">/</span>
+      <span class="label">search docs</span>
+      <span class="kbd">⌘K</span>
+    </button>
+    {% if conf.version %}<span class="docs-version">{{ conf.version }}</span>{% endif %}
+    {% if conf.llm_docs %}<a href="{% url 'mdjango:llms_txt' %}" class="docs-header-link docs-header-link--llm">llms.txt</a><a href="{% url 'mdjango:llms_full' %}" class="docs-header-link docs-header-link--llm">llms-full.txt</a>{% endif %}
+    {% for l in conf.header_links %}<a href="{{ l.url }}" class="docs-header-link">{{ l.label }}</a>{% endfor %}
+    {% if conf.github_url %}<a href="{{ conf.github_url }}" class="docs-header-link">github</a>{% endif %}
+    <button class="docs-theme-toggle" type="button" data-action="theme#toggle" aria-label="Toggle dark mode">◐</button>
+  </div>
+</header>

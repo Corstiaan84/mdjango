@@ -1,0 +1,6 @@
+{% comment %}
+  The article's group label, sitting above the H1 (design mock). Renders nothing when the page
+  belongs to no group — the docs landing page and root-level loose pages.
+{% endcomment %}
+<c-vars label="" />
+{% if label %}<p class="docs-eyebrow">{{ label }}</p>{% endif %}

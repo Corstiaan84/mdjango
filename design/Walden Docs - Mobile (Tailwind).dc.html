@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { theme: { extend: { fontFamily: { mono: ["IBM Plex Mono", "ui-monospace", "monospace"] } } } };</script>
+<style>
+  body { margin: 0; background: #f7f3ea; -webkit-font-smoothing: antialiased; }
+  a { color: var(--ink, #2b241c); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</helmet>
+<div style="--paper: {{ paper }}; --paper2: {{ paper2 }}; --line: {{ line }}; --ink: {{ ink }}; --body: {{ bodyCol }}; --sec: {{ sec }}; --faint: {{ faint }}; --mark: {{ mark }};" class="bg-[var(--paper)] text-[var(--ink)] font-mono min-h-screen text-[14px] leading-[1.7] max-w-[430px] mx-auto">
+
+  <header class="sticky top-0 z-20 bg-[var(--paper)] border-b border-[var(--line)] flex items-center gap-3 px-5 h-[52px]">
+    <a href="Walden Landing - Minimal (Tailwind).dc.html" class="font-semibold py-3">walden</a>
+    <span class="text-[var(--faint)] text-[12px]">/ docs</span>
+    <div class="flex-1"></div>
+    <button onClick="{{ openSearch }}" class="border border-[var(--line)] bg-[var(--paper2)] text-[var(--faint)] font-mono text-[12.5px] px-3.5 py-2 cursor-pointer min-h-[36px]">/ search</button>
+    <button onClick="{{ toggleMenu }}" class="border border-[var(--line)] bg-transparent text-[var(--ink)] font-mono text-[12.5px] px-3.5 py-2 cursor-pointer min-h-[36px]">{{ menuLabel }}</button>
+  </header>
+
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <nav class="border-b border-[var(--line)] bg-[var(--paper2)] px-5 pt-4 pb-5 flex flex-col gap-[18px] text-[13px]">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-[11px] tracking-[0.08em] uppercase text-[var(--faint)] py-1.5">Getting started</span>
+        <a href="#" onClick="{{ closeMenu }}" class="font-semibold py-2">Quickstart</a>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">Preparing a server</a>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">Installing walden</a>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <span class="text-[11px] tracking-[0.08em] uppercase text-[var(--faint)] py-1.5">Guides</span>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">Databases and volumes</a>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">Backups and restores</a>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">Scheduled jobs</a>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">Secrets</a>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <span class="text-[11px] tracking-[0.08em] uppercase text-[var(--faint)] py-1.5">Reference</span>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">walden.toml</a>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">Command reference</a>
+        <a href="#" onClick="{{ closeMenu }}" class="text-[var(--sec)] py-2">Files walden writes</a>
+      </div>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ searchOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="fixed inset-0 bg-[var(--paper)] z-50 max-w-[430px] mx-auto flex flex-col">
+      <div class="flex items-center gap-2.5 px-5 py-3 border-b border-[var(--line)]">
+        <span class="text-[var(--faint)]">/</span>
+        <input ref="{{ searchRef }}" type="text" value="{{ query }}" onChange="{{ onQuery }}" placeholder="search docs" class="border-none bg-transparent outline-none font-mono text-[15px] text-[var(--ink)] w-full min-h-[44px]" />
+        <button onClick="{{ closeSearch }}" class="border border-[var(--line)] bg-transparent text-[var(--sec)] font-mono text-[12px] px-3 py-2 cursor-pointer">esc</button>
+      </div>
+      <div class="px-5 pt-3 pb-1 text-[11px] tracking-[0.08em] uppercase text-[var(--faint)]">{{ resultCount }}</div>
+      <div class="overflow-y-auto flex-1">
+        <sc-for list="{{ results }}" as="r" hint-placeholder-count="3">
+          <a href="#" onClick="{{ closeSearch }}" class="block px-5 py-3 border-b border-[var(--line)]">
+            <span class="flex justify-between gap-4">
+              <span class="text-[13.5px]">{{ r.title }}</span>
+              <span class="text-[12px] text-[var(--faint)]">{{ r.section }}</span>
+            </span>
+            <span class="block text-[12px] text-[var(--sec)] leading-[1.6] mt-0.5">{{ r.preview }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <main class="px-5 pt-8 pb-20">
+    <p class="text-[11px] tracking-[0.08em] uppercase text-[var(--faint)] m-0 mb-2.5">getting started</p>
+    <h1 class="text-[22px] font-semibold m-0 mb-3">Quickstart</h1>
+    <p class="text-[13.5px] text-[var(--body)] m-0 mb-6 [text-wrap:pretty]">This page takes a fresh VPS to a running application in about ten minutes, and explains every file it creates along the way. You need a server with a public IP, a domain pointed at it, and SSH access.</p>
+
+    <div class="border border-[var(--line)] bg-[var(--paper2)] px-4 py-3 m-0 mb-8 text-[12px] flex flex-col gap-1.5">
+      <span class="text-[11px] tracking-[0.08em] uppercase text-[var(--faint)]">On this page</span>
+      <a href="#install" class="text-[var(--sec)] py-[3px]">1. Install</a>
+      <a href="#describe" class="text-[var(--sec)] py-[3px]">2. Describe your app</a>
+      <a href="#deploy" class="text-[var(--sec)] py-[3px]">3. Deploy</a>
+      <a href="#look-around" class="text-[var(--sec)] py-[3px]">4. Look around</a>
+    </div>
+
+    <h2 id="install" class="text-[15px] font-semibold m-0 mb-2.5 pt-5 border-t border-[var(--line)]">1. Install</h2>
+    <p class="text-[13.5px] text-[var(--body)] m-0 mb-3">On the server, as a user with sudo:</p>
+    <div class="relative m-0 mb-3 bg-[var(--paper2)] border border-[var(--line)]"><button onClick="{{ copyBlock0 }}" class="absolute -top-px -right-px border border-[var(--line)] bg-[var(--paper)] text-[var(--sec)] px-3 py-2 font-mono text-[11px] cursor-pointer">{{ copyBlockLabel0 }}</button><div class="py-3.5 pl-3.5 pr-2 mr-[60px] text-[12px] overflow-x-auto whitespace-pre"><span class="text-[var(--faint)]">$</span> curl -fsSL https://walden.sh/install | sh</div></div>
+    <p class="text-[13.5px] text-[var(--body)] m-0 mb-7">The installer places a single binary in <span class="bg-[var(--paper2)] px-[5px] py-px [overflow-wrap:anywhere]">/usr/local/bin/walden</span> and checks that podman, systemd and Caddy are present, installing any that are missing from your distribution's own repositories.</p>
+
+    <h2 id="describe" class="text-[15px] font-semibold m-0 mb-2.5 pt-5 border-t border-[var(--line)]">2. Describe your app</h2>
+    <p class="text-[13.5px] text-[var(--body)] m-0 mb-3"><span class="bg-[var(--paper2)] px-[5px] py-px">walden init</span> writes a minimal <span class="bg-[var(--paper2)] px-[5px] py-px">walden.toml</span>:</p>
+    <div class="relative m-0 mb-7 bg-[var(--paper2)] border border-[var(--line)]"><button onClick="{{ copyBlock1 }}" class="absolute -top-px -right-px border border-[var(--line)] bg-[var(--paper)] text-[var(--sec)] px-3 py-2 font-mono text-[11px] cursor-pointer">{{ copyBlockLabel1 }}</button><div class="py-3.5 pl-3.5 pr-2 mr-[60px] text-[12px] leading-[1.9] overflow-x-auto whitespace-pre">name   = <span class="text-[var(--sec)]">"notes-app"</span>
+domain = <span class="text-[var(--sec)]">"notes.example.com"</span>
+port   = <span class="text-[var(--sec)]">3000</span></div></div>
+
+    <h2 id="deploy" class="text-[15px] font-semibold m-0 mb-2.5 pt-5 border-t border-[var(--line)]">3. Deploy</h2>
+    <div class="relative m-0 mb-3 bg-[var(--paper2)] border border-[var(--line)]"><button onClick="{{ copyBlock2 }}" class="absolute -top-px -right-px border border-[var(--line)] bg-[var(--paper)] text-[var(--sec)] px-3 py-2 font-mono text-[11px] cursor-pointer">{{ copyBlockLabel2 }}</button><div class="py-3.5 pl-3.5 pr-2 mr-[60px] text-[12px] leading-[1.9] overflow-x-auto whitespace-pre"><span class="text-[var(--faint)]">$</span> walden up
+  building notes-app from Containerfile…
+  ok  image built         4.2s
+  ok  unit installed      notes-app.service
+  ok  route published     notes.example.com
+  ok  certificate issued  Let's Encrypt
+
+  live at https://notes.example.com</div></div>
+    <p class="text-[13.5px] text-[var(--body)] m-0 mb-7">That's the whole deploy. Walden built the image with podman, installed a systemd unit to keep it running, appended a Caddy block for the domain, and reloaded. Every file it wrote is printed to the terminal.</p>
+
+    <h2 id="look-around" class="text-[15px] font-semibold m-0 mb-2.5 pt-5 border-t border-[var(--line)]">4. Look around</h2>
+    <p class="text-[13.5px] text-[var(--body)] m-0 mb-3">Everything walden created is a plain file:</p>
+    <div class="border-t border-[var(--line)] m-0 mb-7 text-[12px]">
+      <div class="py-2.5 px-0.5 border-b border-[var(--line)]">
+        <div class="[overflow-wrap:anywhere]">~/.config/systemd/user/notes-app.service</div>
+        <div class="text-[var(--sec)]">the unit</div>
+      </div>
+      <div class="py-2.5 px-0.5 border-b border-[var(--line)]">
+        <div class="[overflow-wrap:anywhere]">/etc/caddy/walden.d/notes-app.caddy</div>
+        <div class="text-[var(--sec)]">the route</div>
+      </div>
+      <div class="py-2.5 px-0.5 border-b border-[var(--line)]">
+        <div class="[overflow-wrap:anywhere]">/var/lib/walden/builds/notes-app/</div>
+        <div class="text-[var(--sec)]">kept builds, for rollback</div>
+      </div>
+    </div>
+
+    <h2 class="text-[15px] font-semibold m-0 mb-3 pt-5 border-t border-[var(--line)]">Where next</h2>
+    <div class="flex flex-col gap-1 text-[13px]">
+      <a href="#" class="py-2">Databases and volumes →</a>
+      <a href="#" class="py-2">Secrets →</a>
+      <a href="#" class="py-2">Command reference →</a>
+    </div>
+
+    <div class="mt-12 pt-5 border-t border-[var(--line)] flex justify-between gap-4 text-[12.5px] text-[var(--sec)]">
+      <a href="#" class="text-[var(--sec)] py-2">← Installing walden</a>
+      <a href="#" class="py-2">Preparing a server →</a>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;version&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;v0.4.2&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Content&quot;}}">
+function themeTokens(mode) {
+  if (mode === "dark") return { paper: "#211c15", paper2: "#2b251c", line: "#3b3426", ink: "#eae3d2", bodyCol: "#b8ae9c", sec: "#9a9080", faint: "#8a7f6b", mark: "#55482a" };
+  return { paper: "#f7f3ea", paper2: "#efe8da", line: "#e0d7c6", ink: "#2b241c", bodyCol: "#5c5346", sec: "#776c5c", faint: "#a2947f", mark: "#e5d9bd" };
+}
+
+const INDEX = [
+  { title: "Quickstart", section: "getting started", body: "Takes a fresh VPS to a running application in about ten minutes, and explains every file it creates along the way." },
+  { title: "Preparing a server", section: "getting started", body: "A public IP, a domain pointed at it, and SSH access. Debian, Fedora and Ubuntu are covered; anything with systemd works." },
+  { title: "Installing walden", section: "getting started", body: "The installer places a single binary in /usr/local/bin/walden and checks that podman, systemd and Caddy are present." },
+  { title: "Databases and volumes", section: "guide", body: "Declare a volume in walden.toml and it becomes a named podman volume, mounted into the container at the path you give." },
+  { title: "Backups and restores", section: "guide", body: "walden backup runs a snapshot of every declared volume and keeps the last seven by default. Restore any snapshot by name." },
+  { title: "Scheduled jobs", section: "guide", body: "Cron-style work becomes systemd timers. A nightly backup gets the same journald logs as everything else." },
+  { title: "Secrets", section: "guide", body: "Environment values live in root-owned files on the server, injected at unit start. Never in your repo." },
+  { title: "walden.toml", section: "reference", body: "name, domain, port, volumes, env, timers — the complete file format, with defaults for every key." },
+  { title: "Command reference", section: "reference", body: "up, ls, logs, rollback, backup, secrets, cron, uninstall. Flags and exit codes for every command." },
+  { title: "Files walden writes", section: "reference", body: "One systemd unit per app, one Caddy block per domain, kept builds under /var/lib/walden/builds." }
+];
+
+class Component extends DCLogic {
+  state = { searchOpen: false, menuOpen: false, query: "", copiedBlock: -1 };
+  componentDidMount() { this._ref = React.createRef(); }
+  highlight(text) {
+    const q = this.state.query.trim().toLowerCase();
+    if (!q) return text;
+    const idx = text.toLowerCase().indexOf(q);
+    if (idx === -1) return text;
+    return React.createElement(React.Fragment, null,
+      text.slice(0, idx),
+      React.createElement("span", { style: { background: "var(--mark, #e5d9bd)" } }, text.slice(idx, idx + q.length)),
+      text.slice(idx + q.length)
+    );
+  }
+  snippet(body) {
+    const q = this.state.query.trim().toLowerCase();
+    const idx = q ? body.toLowerCase().indexOf(q) : -1;
+    if (idx === -1) return body.length > 64 ? body.slice(0, 64) + "…" : body;
+    const start = Math.max(0, idx - 22);
+    let s = (start > 0 ? "…" : "") + body.slice(start, Math.min(body.length, idx + q.length + 40));
+    if (idx + q.length + 40 < body.length) s += "…";
+    return this.highlight(s);
+  }
+  copyBlock(i, text) {
+    try { navigator.clipboard.writeText(text); } catch (e) {}
+    this.setState({ copiedBlock: i });
+    clearTimeout(this._ct);
+    this._ct = setTimeout(() => this.setState({ copiedBlock: -1 }), 1600);
+  }
+  renderVals() {
+    if (!this._ref) this._ref = React.createRef();
+    const q = this.state.query.trim().toLowerCase();
+    const list = q ? INDEX.filter(d => (d.title + " " + d.section + " " + d.body).toLowerCase().includes(q)) : INDEX;
+    return {
+      ...themeTokens(this.props.mode),
+      searchOpen: this.state.searchOpen,
+      menuOpen: this.state.menuOpen,
+      menuLabel: this.state.menuOpen ? "close" : "menu",
+      toggleMenu: () => this.setState(s => ({ menuOpen: !s.menuOpen })),
+      closeMenu: () => this.setState({ menuOpen: false }),
+      query: this.state.query,
+      searchRef: this._ref,
+      resultCount: list.length === 0 ? "no matches" : list.length + (list.length === 1 ? " result" : " results"),
+      results: list.map(d => ({ title: this.highlight(d.title), section: d.section, preview: this.snippet(d.body) })),
+      openSearch: () => {
+        this.setState({ searchOpen: true, query: "", menuOpen: false });
+        setTimeout(() => { if (this._ref.current) this._ref.current.focus(); }, 30);
+      },
+      closeSearch: () => this.setState({ searchOpen: false }),
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      copyBlock0: () => this.copyBlock(0, "curl -fsSL https://walden.sh/install | sh"),
+      copyBlock1: () => this.copyBlock(1, 'name   = "notes-app"\ndomain = "notes.example.com"\nport   = 3000'),
+      copyBlock2: () => this.copyBlock(2, "walden up"),
+      copyBlockLabel0: this.state.copiedBlock === 0 ? "copied" : "copy",
+      copyBlockLabel1: this.state.copiedBlock === 1 ? "copied" : "copy",
+      copyBlockLabel2: this.state.copiedBlock === 2 ? "copied" : "copy"
+    };
+  }
+}
+</script>
+</body>
+</html>

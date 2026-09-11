@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #f7f3ea; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: var(--ink, #2b241c); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</helmet>
+<div style="--paper: {{ paper }}; --paper2: {{ paper2 }}; --line: {{ line }}; --ink: {{ ink }}; --body: {{ bodyCol }}; --sec: {{ sec }}; --faint: {{ faint }}; --mark: {{ mark }}; background: var(--paper, #f7f3ea); color: var(--ink, #2b241c); font-family: 'IBM Plex Mono', ui-monospace, monospace; min-height: 100vh; font-size: 14px; line-height: 1.7; max-width: 430px; margin: 0 auto;">
+
+  <header style="position: sticky; top: 0; z-index: 20; background: var(--paper, #f7f3ea); border-bottom: 1px solid var(--line, #e0d7c6); display: flex; align-items: center; gap: 12px; padding: 0 20px; height: 52px;">
+    <a href="Walden Landing - Mobile.dc.html" style="font-weight: 600; padding: 12px 0;">walden</a>
+    <span style="color: var(--faint, #a2947f); font-size: 12px;">/ docs</span>
+    <div style="flex: 1;"></div>
+    <button onClick="{{ openSearch }}" style="border: 1px solid var(--line, #e0d7c6); background: var(--paper2, #efe8da); color: var(--faint, #a2947f); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; padding: 8px 14px; cursor: pointer; min-height: 36px;">/ search</button>
+    <button onClick="{{ toggleMenu }}" style="border: 1px solid var(--line, #e0d7c6); background: none; color: var(--ink, #2b241c); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; padding: 8px 14px; cursor: pointer; min-height: 36px;">{{ menuLabel }}</button>
+  </header>
+
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <nav style="border-bottom: 1px solid var(--line, #e0d7c6); background: var(--paper2, #efe8da); padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 18px; font-size: 13px;">
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint, #a2947f); padding: 6px 0;">Getting started</span>
+        <a href="#" onClick="{{ closeMenu }}" style="font-weight: 600; padding: 8px 0;">Quickstart</a>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">Preparing a server</a>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">Installing walden</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint, #a2947f); padding: 6px 0;">Guides</span>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">Databases and volumes</a>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">Backups and restores</a>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">Scheduled jobs</a>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">Secrets</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint, #a2947f); padding: 6px 0;">Reference</span>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">walden.toml</a>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">Command reference</a>
+        <a href="#" onClick="{{ closeMenu }}" style="color: var(--sec, #776c5c); padding: 8px 0;">Files walden writes</a>
+      </div>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ searchOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: var(--paper, #f7f3ea); z-index: 50; max-width: 430px; margin: 0 auto; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--line, #e0d7c6);">
+        <span style="color: var(--faint, #a2947f);">/</span>
+        <input ref="{{ searchRef }}" type="text" value="{{ query }}" onChange="{{ onQuery }}" placeholder="search docs" style="border: none; background: transparent; outline: none; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; color: var(--ink, #2b241c); width: 100%; min-height: 44px;" />
+        <button onClick="{{ closeSearch }}" style="border: 1px solid var(--line, #e0d7c6); background: none; color: var(--sec, #776c5c); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; padding: 8px 12px; cursor: pointer;">esc</button>
+      </div>
+      <div style="padding: 12px 20px 4px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint, #a2947f);">{{ resultCount }}</div>
+      <div style="overflow-y: auto; flex: 1;">
+        <sc-for list="{{ results }}" as="r" hint-placeholder-count="3">
+          <a href="#" onClick="{{ closeSearch }}" style="display: block; padding: 12px 20px; border-bottom: 1px solid var(--line, #e0d7c6);">
+            <span style="display: flex; justify-content: space-between; gap: 16px;">
+              <span style="font-size: 13.5px;">{{ r.title }}</span>
+              <span style="font-size: 12px; color: var(--faint, #a2947f);">{{ r.section }}</span>
+            </span>
+            <span style="display: block; font-size: 12px; color: var(--sec, #776c5c); line-height: 1.6; margin-top: 2px;">{{ r.preview }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <main style="padding: 32px 20px 80px;">
+    <p style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint, #a2947f); margin: 0 0 10px;">getting started</p>
+    <h1 style="font-size: 22px; font-weight: 600; margin: 0 0 12px;">Quickstart</h1>
+    <p style="font-size: 13.5px; color: var(--body, #5c5346); margin: 0 0 24px; text-wrap: pretty;">This page takes a fresh VPS to a running application in about ten minutes, and explains every file it creates along the way. You need a server with a public IP, a domain pointed at it, and SSH access.</p>
+
+    <div style="border: 1px solid var(--line, #e0d7c6); background: var(--paper2, #efe8da); padding: 12px 16px; margin: 0 0 32px; font-size: 12px; display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint, #a2947f);">On this page</span>
+      <a href="#install" style="color: var(--sec, #776c5c); padding: 3px 0;">1. Install</a>
+      <a href="#describe" style="color: var(--sec, #776c5c); padding: 3px 0;">2. Describe your app</a>
+      <a href="#deploy" style="color: var(--sec, #776c5c); padding: 3px 0;">3. Deploy</a>
+      <a href="#look-around" style="color: var(--sec, #776c5c); padding: 3px 0;">4. Look around</a>
+    </div>
+
+    <h2 id="install" style="font-size: 15px; font-weight: 600; margin: 0 0 10px; padding-top: 20px; border-top: 1px solid var(--line, #e0d7c6);">1. Install</h2>
+    <p style="font-size: 13.5px; color: var(--body, #5c5346); margin: 0 0 12px;">On the server, as a user with sudo:</p>
+    <div style="position: relative; margin: 0 0 12px; background: var(--paper2, #efe8da); border: 1px solid var(--line, #e0d7c6);"><button onClick="{{ copyBlock0 }}" style="position: absolute; top: -1px; right: -1px; border: 1px solid var(--line, #e0d7c6); background: var(--paper, #f7f3ea); color: var(--sec, #776c5c); padding: 8px 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; cursor: pointer;">{{ copyBlockLabel0 }}</button><div style="padding: 14px 8px 14px 14px; font-size: 12px; overflow-x: auto; margin-right: 60px; white-space: pre;"><span style="color: var(--faint, #a2947f);">$</span> curl -fsSL https://walden.sh/install | sh</div></div>
+    <p style="font-size: 13.5px; color: var(--body, #5c5346); margin: 0 0 28px;">The installer places a single binary in <span style="background: var(--paper2, #efe8da); padding: 1px 5px; overflow-wrap: anywhere;">/usr/local/bin/walden</span> and checks that podman, systemd and Caddy are present, installing any that are missing from your distribution's own repositories.</p>
+
+    <h2 id="describe" style="font-size: 15px; font-weight: 600; margin: 0 0 10px; padding-top: 20px; border-top: 1px solid var(--line, #e0d7c6);">2. Describe your app</h2>
+    <p style="font-size: 13.5px; color: var(--body, #5c5346); margin: 0 0 12px;"><span style="background: var(--paper2, #efe8da); padding: 1px 5px;">walden init</span> writes a minimal <span style="background: var(--paper2, #efe8da); padding: 1px 5px;">walden.toml</span>:</p>
+    <div style="position: relative; margin: 0 0 28px; background: var(--paper2, #efe8da); border: 1px solid var(--line, #e0d7c6);"><button onClick="{{ copyBlock1 }}" style="position: absolute; top: -1px; right: -1px; border: 1px solid var(--line, #e0d7c6); background: var(--paper, #f7f3ea); color: var(--sec, #776c5c); padding: 8px 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; cursor: pointer;">{{ copyBlockLabel1 }}</button><div style="padding: 14px 8px 14px 14px; font-size: 12px; line-height: 1.9; overflow-x: auto; margin-right: 60px; white-space: pre;">name   = <span style="color: var(--sec, #776c5c);">"notes-app"</span>
+domain = <span style="color: var(--sec, #776c5c);">"notes.example.com"</span>
+port   = <span style="color: var(--sec, #776c5c);">3000</span></div></div>
+
+    <h2 id="deploy" style="font-size: 15px; font-weight: 600; margin: 0 0 10px; padding-top: 20px; border-top: 1px solid var(--line, #e0d7c6);">3. Deploy</h2>
+    <div style="position: relative; margin: 0 0 12px; background: var(--paper2, #efe8da); border: 1px solid var(--line, #e0d7c6);"><button onClick="{{ copyBlock2 }}" style="position: absolute; top: -1px; right: -1px; border: 1px solid var(--line, #e0d7c6); background: var(--paper, #f7f3ea); color: var(--sec, #776c5c); padding: 8px 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; cursor: pointer;">{{ copyBlockLabel2 }}</button><div style="padding: 14px 8px 14px 14px; font-size: 12px; line-height: 1.9; overflow-x: auto; margin-right: 60px; white-space: pre;"><span style="color: var(--faint, #a2947f);">$</span> walden up
+  building notes-app from Containerfile…
+  ok  image built         4.2s
+  ok  unit installed      notes-app.service
+  ok  route published     notes.example.com
+  ok  certificate issued  Let's Encrypt
+
+  live at https://notes.example.com</div></div>
+    <p style="font-size: 13.5px; color: var(--body, #5c5346); margin: 0 0 28px;">That's the whole deploy. Walden built the image with podman, installed a systemd unit to keep it running, appended a Caddy block for the domain, and reloaded. Every file it wrote is printed to the terminal.</p>
+
+    <h2 id="look-around" style="font-size: 15px; font-weight: 600; margin: 0 0 10px; padding-top: 20px; border-top: 1px solid var(--line, #e0d7c6);">4. Look around</h2>
+    <p style="font-size: 13.5px; color: var(--body, #5c5346); margin: 0 0 12px;">Everything walden created is a plain file:</p>
+    <div style="border-top: 1px solid var(--line, #e0d7c6); margin: 0 0 28px; font-size: 12px;">
+      <div style="padding: 10px 2px; border-bottom: 1px solid var(--line, #e0d7c6);">
+        <div style="overflow-wrap: anywhere;">~/.config/systemd/user/notes-app.service</div>
+        <div style="color: var(--sec, #776c5c);">the unit</div>
+      </div>
+      <div style="padding: 10px 2px; border-bottom: 1px solid var(--line, #e0d7c6);">
+        <div style="overflow-wrap: anywhere;">/etc/caddy/walden.d/notes-app.caddy</div>
+        <div style="color: var(--sec, #776c5c);">the route</div>
+      </div>
+      <div style="padding: 10px 2px; border-bottom: 1px solid var(--line, #e0d7c6);">
+        <div style="overflow-wrap: anywhere;">/var/lib/walden/builds/notes-app/</div>
+        <div style="color: var(--sec, #776c5c);">kept builds, for rollback</div>
+      </div>
+    </div>
+
+    <h2 style="font-size: 15px; font-weight: 600; margin: 0 0 12px; padding-top: 20px; border-top: 1px solid var(--line, #e0d7c6);">Where next</h2>
+    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px;">
+      <a href="#" style="padding: 8px 0;">Databases and volumes →</a>
+      <a href="#" style="padding: 8px 0;">Secrets →</a>
+      <a href="#" style="padding: 8px 0;">Command reference →</a>
+    </div>
+
+    <div style="margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line, #e0d7c6); display: flex; justify-content: space-between; gap: 16px; font-size: 12.5px; color: var(--sec, #776c5c);">
+      <a href="#" style="color: var(--sec, #776c5c); padding: 8px 0;">← Installing walden</a>
+      <a href="#" style="padding: 8px 0;">Preparing a server →</a>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;version&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;v0.4.2&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Content&quot;}}">
+function themeTokens(mode) {
+  if (mode === "dark") return { paper: "#211c15", paper2: "#2b251c", line: "#3b3426", ink: "#eae3d2", bodyCol: "#b8ae9c", sec: "#9a9080", faint: "#8a7f6b", mark: "#55482a" };
+  return { paper: "#f7f3ea", paper2: "#efe8da", line: "#e0d7c6", ink: "#2b241c", bodyCol: "#5c5346", sec: "#776c5c", faint: "#a2947f", mark: "#e5d9bd" };
+}
+
+const INDEX = [
+  { title: "Quickstart", section: "getting started", body: "Takes a fresh VPS to a running application in about ten minutes, and explains every file it creates along the way." },
+  { title: "Preparing a server", section: "getting started", body: "A public IP, a domain pointed at it, and SSH access. Debian, Fedora and Ubuntu are covered; anything with systemd works." },
+  { title: "Installing walden", section: "getting started", body: "The installer places a single binary in /usr/local/bin/walden and checks that podman, systemd and Caddy are present." },
+  { title: "Databases and volumes", section: "guide", body: "Declare a volume in walden.toml and it becomes a named podman volume, mounted into the container at the path you give." },
+  { title: "Backups and restores", section: "guide", body: "walden backup runs a snapshot of every declared volume and keeps the last seven by default. Restore any snapshot by name." },
+  { title: "Scheduled jobs", section: "guide", body: "Cron-style work becomes systemd timers. A nightly backup gets the same journald logs as everything else." },
+  { title: "Secrets", section: "guide", body: "Environment values live in root-owned files on the server, injected at unit start. Never in your repo." },
+  { title: "walden.toml", section: "reference", body: "name, domain, port, volumes, env, timers — the complete file format, with defaults for every key." },
+  { title: "Command reference", section: "reference", body: "up, ls, logs, rollback, backup, secrets, cron, uninstall. Flags and exit codes for every command." },
+  { title: "Files walden writes", section: "reference", body: "One systemd unit per app, one Caddy block per domain, kept builds under /var/lib/walden/builds." }
+];
+
+class Component extends DCLogic {
+  state = { searchOpen: false, menuOpen: false, query: "", copiedBlock: -1 };
+  componentDidMount() { this._ref = React.createRef(); }
+  highlight(text) {
+    const q = this.state.query.trim().toLowerCase();
+    if (!q) return text;
+    const idx = text.toLowerCase().indexOf(q);
+    if (idx === -1) return text;
+    return React.createElement(React.Fragment, null,
+      text.slice(0, idx),
+      React.createElement("span", { style: { background: "var(--mark, #e5d9bd)" } }, text.slice(idx, idx + q.length)),
+      text.slice(idx + q.length)
+    );
+  }
+  snippet(body) {
+    const q = this.state.query.trim().toLowerCase();
+    const idx = q ? body.toLowerCase().indexOf(q) : -1;
+    if (idx === -1) return body.length > 64 ? body.slice(0, 64) + "…" : body;
+    const start = Math.max(0, idx - 22);
+    let s = (start > 0 ? "…" : "") + body.slice(start, Math.min(body.length, idx + q.length + 40));
+    if (idx + q.length + 40 < body.length) s += "…";
+    return this.highlight(s);
+  }
+  copyBlock(i, text) {
+    try { navigator.clipboard.writeText(text); } catch (e) {}
+    this.setState({ copiedBlock: i });
+    clearTimeout(this._ct);
+    this._ct = setTimeout(() => this.setState({ copiedBlock: -1 }), 1600);
+  }
+  renderVals() {
+    if (!this._ref) this._ref = React.createRef();
+    const q = this.state.query.trim().toLowerCase();
+    const list = q ? INDEX.filter(d => (d.title + " " + d.section + " " + d.body).toLowerCase().includes(q)) : INDEX;
+    return {
+      ...themeTokens(this.props.mode),
+      searchOpen: this.state.searchOpen,
+      menuOpen: this.state.menuOpen,
+      menuLabel: this.state.menuOpen ? "close" : "menu",
+      toggleMenu: () => this.setState(s => ({ menuOpen: !s.menuOpen })),
+      closeMenu: () => this.setState({ menuOpen: false }),
+      query: this.state.query,
+      searchRef: this._ref,
+      resultCount: list.length === 0 ? "no matches" : list.length + (list.length === 1 ? " result" : " results"),
+      results: list.map(d => ({ title: this.highlight(d.title), section: d.section, preview: this.snippet(d.body) })),
+      openSearch: () => {
+        this.setState({ searchOpen: true, query: "", menuOpen: false });
+        setTimeout(() => { if (this._ref.current) this._ref.current.focus(); }, 30);
+      },
+      closeSearch: () => this.setState({ searchOpen: false }),
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      copyBlock0: () => this.copyBlock(0, "curl -fsSL https://walden.sh/install | sh"),
+      copyBlock1: () => this.copyBlock(1, 'name   = "notes-app"\ndomain = "notes.example.com"\nport   = 3000'),
+      copyBlock2: () => this.copyBlock(2, "walden up"),
+      copyBlockLabel0: this.state.copiedBlock === 0 ? "copied" : "copy",
+      copyBlockLabel1: this.state.copiedBlock === 1 ? "copied" : "copy",
+      copyBlockLabel2: this.state.copiedBlock === 2 ? "copied" : "copy"
+    };
+  }
+}
+</script>
+</body>
+</html>

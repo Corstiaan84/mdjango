@@ -1,0 +1,15 @@
+<c-docs.base :title="conf.title" :page_md_url="page_md_url">
+  <c-docs.header :conf="conf" :breadcrumb="breadcrumb" />
+  <div class="docs-backdrop" data-action="disclosure#close"></div>
+  <div class="docs-shell{% if not toc %} docs-shell--no-toc{% endif %}">
+    <c-docs.sidebar :nav="nav" />
+    <main class="docs-main">
+      {% if toc %}<c-docs.toc :items="toc" variant="inline" />{% endif %}
+      <c-docs.eyebrow :label="eyebrow" />
+      <c-docs.article :html="article_html" />
+      <c-docs.pager :prev="prev" :next="next" :prev_url="prev_url" :next_url="next_url" />
+    </main>
+    {% if toc %}<c-docs.toc :items="toc" variant="rail" />{% endif %}
+  </div>
+  <c-docs.search />
+</c-docs.base>

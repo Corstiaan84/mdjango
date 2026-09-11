@@ -1,0 +1,10 @@
+# The compiled stylesheets (mdjango/static/mdjango/mdjango.css + fonts.css) ARE committed: they
+# are the shipped, no-consumer-build artifact. theme/build.sh regenerates them from theme/src/
+# with nothing but python3 — no toolchain to fetch, so nothing to ignore here.
+
+# Local dev
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+/staticfiles/

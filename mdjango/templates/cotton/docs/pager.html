@@ -1,0 +1,4 @@
+<nav class="docs-pager" aria-label="Pagination">
+  {% if prev %}<a href="{{ prev_url }}" class="docs-pager-link prev">← {{ prev.title }}</a>{% else %}<span></span>{% endif %}
+  {% if next %}<a href="{{ next_url }}" class="docs-pager-link next">{{ next.title }} →</a>{% else %}<span></span>{% endif %}
+</nav>

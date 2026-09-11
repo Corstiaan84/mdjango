@@ -1,0 +1,41 @@
+{% comment %}
+  The left nav. Depth is capped at three levels (ADR 0004), so the nesting is written out rather
+  than recursed: a group holds page links and collapsible subgroups. Subgroups are native
+  <details> — `open` arrives pre-computed for the current page, so there is no controller here.
+{% endcomment %}
+<nav class="docs-sidebar" data-disclosure-target="panel" aria-label="Documentation">
+  {% comment %}The Home link (root _index.md) — pinned above every Section; absent otherwise.{% endcomment %}
+  {% if home %}
+  <div class="docs-nav-group">
+    <a href="{{ home.url }}" class="docs-nav-link{% if home.active %} is-active{% endif %}">{{ home.title }}</a>
+  </div>
+  {% endif %}
+  {% comment %}llms.txt / llms-full.txt — a mobile-only affordance: the header hides these at
+  ≤767px and this drawer group shows them (kept hidden on desktop by CSS, where they live in
+  the header). Order matches the header: below the Home link, above the sections.{% endcomment %}
+  {% if conf.llm_docs %}
+  <div class="docs-nav-group docs-nav-group--llm">
+    <a href="{% url 'mdjango:llms_txt' %}" class="docs-nav-link">llms.txt</a>
+    <a href="{% url 'mdjango:llms_full' %}" class="docs-nav-link">llms-full.txt</a>
+  </div>
+  {% endif %}
+  {% for group in nav %}
+  <div class="docs-nav-group">
+    {% if group.title %}<span class="docs-nav-label">{{ group.title }}</span>{% endif %}
+    {% for item in group.items %}
+      {% if item.kind == "subgroup" %}
+        <details class="docs-nav-sub"{% if item.open %} open{% endif %}>
+          <summary class="docs-nav-sublabel">{{ item.title }}</summary>
+          <div class="docs-nav-subitems">
+            {% for page in item.items %}
+              <a href="{{ page.url }}" class="docs-nav-link{% if page.active %} is-active{% endif %}">{{ page.title }}</a>
+            {% endfor %}
+          </div>
+        </details>
+      {% else %}
+        <a href="{{ item.url }}" class="docs-nav-link{% if item.active %} is-active{% endif %}">{{ item.title }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endfor %}
+</nav>

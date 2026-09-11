@@ -1,0 +1,5 @@
+<c-vars variant="rail" />
+<nav class="docs-toc docs-toc--{{ variant }}" data-controller="scrollspy" aria-label="On this page">
+  <span class="docs-toc-label">On this page</span>
+  {% for t in items %}<a href="#{{ t.id }}" data-scrollspy-link class="docs-toc-link lvl-{{ t.level }}">{{ t.label }}</a>{% endfor %}
+</nav>

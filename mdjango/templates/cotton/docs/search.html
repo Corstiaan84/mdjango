@@ -1,0 +1,12 @@
+<div class="search-dialog" data-search-target="dialog" data-search-index-url="{% url 'mdjango:search_index' %}" data-action="click->search#backdrop keydown->search#nav" hidden>
+  <div class="search-panel">
+    <div class="search-top">
+      <span class="k">/</span>
+      <input type="text" class="search-input" data-search-target="input" data-action="input->search#query" placeholder="search docs" aria-label="Search docs">
+      <button type="button" class="search-esc" data-action="search#close">esc</button>
+    </div>
+    <div class="search-count" data-search-target="count"></div>
+    <div class="search-results" data-search-target="results"></div>
+    <div class="search-foot"><span>↑↓ navigate</span><span>↵ open</span><span>esc close</span></div>
+  </div>
+</div>

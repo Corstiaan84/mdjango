@@ -1,0 +1,172 @@
+/* ============================================================================================
+ * Reset — the subset of Tailwind's preflight this sheet actually relies on, hand-written so the
+ * package no longer needs Tailwind (and no longer fetches a release binary at build time).
+ *
+ * Dropped from preflight: the two `--tw-*` variable blocks (2,228 bytes / 102 custom properties
+ * that exist only to feed utility classes we do not use), and the form-widget minutiae for
+ * elements a docs page never renders — progress, fieldset/legend, textarea, dialog, number
+ * spinners, search decorations, file-upload buttons, -moz-focusring/-ui-invalid. The
+ * ::placeholder colour is dropped too: the only input in the shell sets its own from the
+ * palette, so a default grey here would only ever be overridden.
+ * ============================================================================================ */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  /* Preflight hardcodes Tailwind's #e5e7eb here. Never visible today — every border-width in this
+     sheet arrives with its own colour — but an on-palette default means a future bare
+     `border-width` renders a theme hairline instead of a stray grey. */
+  border-color: var(--border);
+}
+html {
+  /* Preflight puts its sans stack here; this theme is mono throughout and `body.docs-body` sets
+     the same value, so inheriting the theme font is the coherent default. Affects only <html>
+     and non-rendered <head> children in practice. */
+  font-family: var(--font);
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  margin: 0;
+  line-height: inherit;
+}
+/* Headings are reset to inherit so h4-h6 — which the markdown pipeline can emit but this sheet
+   does not style — take the body's size and weight instead of the UA's. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+blockquote,
+dd,
+dl,
+figure,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+p,
+pre {
+  margin: 0;
+}
+menu,
+ol,
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+hr {
+  height: 0;
+  color: inherit;
+  border-top-width: 1px;
+}
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+b,
+strong {
+  font-weight: bolder;
+}
+/* pymdownx.tilde can emit <sub>; keep sub/sup from disturbing the line box */
+small {
+  font-size: 80%;
+}
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+sub {
+  bottom: -0.25em;
+}
+sup {
+  top: -0.5em;
+}
+abbr:where([title]) {
+  text-decoration: underline dotted;
+}
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--code-font);
+  font-size: 1em;
+}
+table {
+  text-indent: 0;
+  border-color: inherit;
+  border-collapse: collapse;
+}
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+button,
+select {
+  text-transform: none;
+}
+button,
+input:where([type="button"]),
+input:where([type="reset"]),
+input:where([type="submit"]) {
+  -webkit-appearance: button;
+  background-color: transparent;
+  background-image: none;
+}
+button,
+[role="button"] {
+  cursor: pointer;
+}
+:disabled {
+  cursor: default;
+}
+summary {
+  display: list-item;
+}
+audio,
+canvas,
+embed,
+iframe,
+img,
+object,
+svg,
+video {
+  display: block;
+  vertical-align: middle;
+}
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+[hidden]:where(:not([hidden="until-found"])) {
+  display: none;
+}

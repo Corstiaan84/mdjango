@@ -1,0 +1,3 @@
+<nav class="docs-breadcrumb" aria-label="Breadcrumb">
+  {% for c in items %}<span class="sep">/</span>{% if c.url %}<a href="{{ c.url }}">{{ c.label }}</a>{% else %}<span>{{ c.label }}</span>{% endif %}{% endfor %}
+</nav>

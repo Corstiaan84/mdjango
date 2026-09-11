@@ -1,0 +1,754 @@
+/* ============================================================================================
+ * Tokens (ADR 0003 §2). Each colour ramp is defined by its two ends, which a Consumer sets; the
+ * middle of each ramp is color-mix()-derived and locked, so a Consumer cannot break the
+ * intermediate contrast steps the design depends on.
+ *
+ *   surface ramp:  --background ..... --surface ..... --border
+ *   text ramp:     --foreground ..... --foreground-body ..... --foreground-muted ..... --foreground-subtle
+ *
+ * Interpolating *within* a ramp is load-bearing. The earlier model derived every stop from the two
+ * extremes of the whole palette (text mixed toward --background, surfaces toward --foreground),
+ * which pulls chroma toward the midpoint and desaturates any tinted palette: a straight line
+ * between two low-chroma endpoints cannot reach a more chromatic mid-tone. Ramp-internal mixing
+ * keeps whatever chroma the seeds carry. Ratios are fitted in OKLab to the design mock (worst case
+ * 2/255 per channel); the dark theme re-states the two text ratios because its ladder is
+ * deliberately compressed at the low-emphasis end.
+ *
+ * ============================================================================================ */
+:root {
+  --font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --code-font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-size: 14px;
+  /* Every size below is an exact fraction of --font-size, so this one knob scales the whole
+     site. Written as 4-decimal ratios, not 2 — 0.78rem is 10.92px, which misses the 11px step.
+     The scale: 11 / 11.5 / 12 / 13 / 14 / 15 / 16 / 26px. The design mock also carried 12.5px
+     and 13.5px steps; all three of 12.5/13/13.5 are collapsed into 13px, since a half-pixel
+     distinction is invisible but forces every new rule to choose between them. */
+
+  /* seeds — the ends of each ramp, plus accent */
+  --background: #f7f3ea; /* lightest surface */
+  --border: #e0d7c6; /* darkest surface tone — hairlines */
+  --foreground: #2b241c; /* full-emphasis text */
+  --foreground-subtle: #a2947f; /* lowest-emphasis text */
+  --accent: var(--foreground); /* monochrome out of the box */
+
+  /* derived + locked — the middle of each ramp */
+  --surface: color-mix(in oklab, var(--background) 59%, var(--border));
+  --foreground-body: color-mix(in oklab, var(--foreground) 55%, var(--foreground-subtle));
+  --foreground-muted: color-mix(in oklab, var(--foreground) 33%, var(--foreground-subtle));
+}
+
+:root[data-theme="dark"] {
+  --background: #211c15;
+  --border: #3b3426;
+  --foreground: #eae3d2;
+  --foreground-subtle: #8a7f6b;
+  --foreground-body: color-mix(in oklab, var(--foreground) 48.6%, var(--foreground-subtle));
+  --foreground-muted: color-mix(in oklab, var(--foreground) 19%, var(--foreground-subtle));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #211c15;
+    --border: #3b3426;
+    --foreground: #eae3d2;
+    --foreground-subtle: #8a7f6b;
+    --foreground-body: color-mix(in oklab, var(--foreground) 48.6%, var(--foreground-subtle));
+    --foreground-muted: color-mix(in oklab, var(--foreground) 19%, var(--foreground-subtle));
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+body.docs-body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+/* :where() zeroes this reset's specificity contribution, leaving it at `.docs-body` (0,1,0).
+   Without that it is (0,1,1) and out-specifies every single-class component rule that colours a
+   link — .docs-nav-link, .docs-toc-link, .docs-header-link — which then silently render at full
+   --foreground instead of their intended stop. Source order cannot settle it either: the reset
+   is concatenated first, so a specificity win here would be permanent. */
+.docs-body :where(a) {
+  color: var(--foreground);
+  text-decoration: none;
+}
+.docs-body a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* ============================================================================================
+ * House style. One flat, source-ordered sheet — no cascade layers. Most of what follows targets
+ * classes produced at runtime rather than written in a template: by the render pipeline
+ * (.code-block, .copy-btn, Pygments tokens), by controllers (.search-hit, .is-active), or built
+ * dynamically (.docs-toc--rail from `docs-toc--{{ variant }}`). See docs/adr/0005 on why none of
+ * it is expressed as utility classes.
+ * ============================================================================================ */
+
+/* --- header ---------------------------------------------------------------------------------- */
+.docs-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+.docs-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* 28px */
+  width: 100%;
+  max-width: 103rem;
+  height: 4rem;
+  padding: 0 clamp(20px, 3vw, 40px);
+}
+.docs-wordmark {
+  font-weight: 600;
+}
+.docs-breadcrumb {
+  color: var(--foreground-subtle);
+  font-size: 0.9286rem;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.docs-breadcrumb .sep,
+.docs-breadcrumb a {
+  color: var(--foreground-subtle);
+}
+.docs-header-spacer {
+  flex: 1;
+}
+.docs-search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 15.7rem;
+  padding: 0.4rem 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--foreground-subtle);
+  font: inherit;
+  font-size: 0.9286rem;
+  cursor: text;
+}
+.docs-search-trigger:hover {
+  border-color: var(--foreground-subtle);
+}
+.docs-search-trigger .label {
+  flex: 1;
+  text-align: left;
+}
+.docs-search-trigger .kbd,
+.search-esc {
+  border: 1px solid var(--border);
+  padding: 0 0.35rem;
+  font-size: 0.7857rem;
+}
+.docs-version {
+  color: var(--foreground-subtle);
+  font-size: 0.8571rem;
+}
+.docs-header-link {
+  color: var(--foreground-muted);
+  font-size: 0.9286rem;
+}
+.docs-theme-toggle,
+.docs-hamburger {
+  background: none;
+  border: none;
+  color: var(--foreground-subtle);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.docs-theme-toggle:hover {
+  color: var(--foreground);
+}
+.docs-hamburger {
+  display: none;
+  font-size: 1.3rem;
+}
+
+/* --- three-column grid ----------------------------------------------------------------------- */
+.docs-shell {
+  width: 100%;
+  max-width: 103rem;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 3vw, 40px);
+  display: grid;
+  grid-template-columns: minmax(12.8rem, 15.7rem) minmax(0, 1fr) minmax(9.3rem, 11.4rem);
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+}
+/* A page with no H2/H3 renders no TOC rail, so its column goes rather than sitting empty: holding
+   it would keep ~220px away from the prose at every width, including the narrow ones where the
+   text needs it. The prose does not then sprawl, because `.article` caps the measure — see the
+   `max-width` there. Cap, not reservation: the space is available, the line length is not. */
+.docs-shell--no-toc {
+  grid-template-columns: minmax(12.8rem, 15.7rem) minmax(0, 1fr);
+}
+
+/* --- sidebar --------------------------------------------------------------------------------- */
+.docs-sidebar {
+  position: sticky;
+  top: 4rem;
+  /* Scroll a long nav within the sidebar instead of riding the body scroll: it sticks below
+     the 4rem header, so its own scroll region is the viewport minus that header. */
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* 28px */
+  padding: 3.4286rem 0; /* 48px */
+  font-size: 0.9286rem;
+}
+.docs-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.64rem;
+}
+.docs-nav-label {
+  font-size: 0.7857rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+}
+.docs-nav-link {
+  color: var(--foreground-muted);
+}
+.docs-nav-link.is-active {
+  color: var(--foreground);
+  font-weight: 600;
+  border-left: 2px solid var(--foreground);
+  padding-left: 0.7rem;
+  margin-left: -0.85rem;
+}
+/* The llms.txt / llms-full.txt links live in the header on desktop; this sidebar copy shows
+   only in the mobile drawer (see the ≤767px block), so it is hidden here. */
+.docs-nav-group--llm {
+  display: none;
+}
+
+/* Collapsible subsection (ADR 0004 §5) — native <details>, no controller. `open` is
+   server-rendered on the subsection holding the current page, so there is no JS and no state.
+   Metrics follow the design mock: a 10px caret in a 12px box, children on an 18px rail. */
+/* Deliberately NOT a flex container. Chrome keeps a box for a closed <details>' content
+   (`::details-content`, content-visibility: hidden), so a `gap` here would apply between the
+   summary and that empty box — 9px of dead space under every collapsed subsection, and none
+   above it. The spacing belongs to the child that needs it, below. */
+.docs-nav-sub {
+  display: block;
+}
+.docs-nav-sublabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4286rem; /* 6px */
+  cursor: pointer;
+  color: var(--foreground-muted);
+  list-style: none;
+}
+.docs-nav-sublabel::-webkit-details-marker {
+  display: none;
+}
+.docs-nav-sublabel::before {
+  content: "\25B8"; /* ▸ collapsed */
+  width: 0.8571rem; /* 12px — fixed, so the label doesn't shift when the caret turns */
+  font-size: 0.7143rem; /* 10px */
+  color: var(--foreground-subtle);
+}
+.docs-nav-sub[open] > .docs-nav-sublabel::before {
+  content: "\25BE"; /* ▾ expanded */
+}
+.docs-nav-sublabel:hover {
+  color: var(--foreground);
+}
+.docs-nav-subitems {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.64rem; /* 9px — the summary/children gap, carried by the children */
+  gap: 0.5714rem; /* 8px */
+  padding-left: 1.2857rem; /* 18px */
+  border-left: 1px solid var(--border);
+  margin-left: 0.3571rem; /* 5px */
+}
+/* Inside a subgroup the active marker lands *on* the guide line rather than beside it — the
+   outer pull is measured from the section edge, which is 18px further left here. The padding has
+   to grow by the same 18px, or the label itself shifts left with the marker: padding + border
+   must cancel the pull exactly (18px = 16px + the 2px marker), so the third-level title stays on
+   the rail's text column whether or not it is the current page. */
+.docs-nav-subitems > .docs-nav-link.is-active {
+  margin-left: -1.2857rem;
+  padding-left: 1.1429rem; /* 16px + the 2px border = the 18px pull */
+}
+
+/* --- eyebrow -------------------------------------------------------------------------------- */
+/* The article's group label, above the H1. Same type treatment as the nav/TOC section labels. */
+.docs-eyebrow {
+  margin: 0 0 1rem; /* 14px */
+  font-size: 0.8571rem; /* 12px */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+}
+
+/* --- main / article -------------------------------------------------------------------------- */
+.docs-main {
+  padding: 3.4286rem 0 7.8571rem; /* 48px / 110px */
+  border-left: 1px solid var(--border);
+  padding-left: clamp(28px, 4vw, 56px);
+  min-width: 0;
+}
+
+/* --- table of contents ----------------------------------------------------------------------- */
+.docs-toc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  font-size: 0.8571rem;
+}
+/* The rail sits 4px lower than the sidebar/main (52px vs 48px) so "On this page" — which carries
+   a label above its links — lines up with the article's first heading rather than overshooting. */
+.docs-toc--rail {
+  position: sticky;
+  top: 4rem;
+  padding: 3.7143rem 0; /* 52px */
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+.docs-toc--inline {
+  display: none;
+  margin: 0 0 2.5rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.docs-toc-label {
+  font-size: 0.7857rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+  margin-bottom: 0.25rem;
+}
+.docs-toc-link {
+  color: var(--foreground-muted);
+  padding-left: 0.7rem;
+  margin-left: -0.85rem;
+  border-left: 2px solid transparent;
+}
+.docs-toc-link.lvl-3 {
+  padding-left: 1.5rem;
+  font-size: 0.7857rem; /* 11px — one step down from the rail's 12px */
+}
+.docs-toc-link.is-active {
+  color: var(--foreground);
+  border-left-color: var(--foreground);
+}
+
+/* --- pager ----------------------------------------------------------------------------------- */
+.docs-pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-top: 4.5714rem; /* 64px */
+  padding-top: 1.7143rem; /* 24px */
+  border-top: 1px solid var(--border);
+  font-size: 0.9286rem;
+  color: var(--foreground-muted);
+}
+.docs-pager-link.next {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* --- mobile nav plumbing --------------------------------------------------------------------- */
+.docs-backdrop {
+  display: none;
+}
+
+/* ============================================================================================
+ * Prose — bespoke, token-bound, --font-size-relative (ADR 0003 §4). Styles every element the
+ * markdown pipeline can emit.
+ * ============================================================================================ */
+/* The measure cap. 57rem is exactly the article's width when the TOC rail *is* present and the
+   shell is at its 103rem maximum (103 - 15.7 - 11.4 rem of columns, less 40+64+64+56px of padding
+   and gaps = 798.6px = 57.04rem), so a page with a rail is unaffected and a page without one
+   matches it instead of running to ~128 characters.
+   It is a max, not a width: below the cap the prose tracks the column and shrinks with the window
+   rather than holding a phantom gutter. In rem, so a consumer who raises --font-size keeps the
+   same character count instead of a narrower line. */
+.article {
+  min-width: 0;
+  max-width: 57rem;
+}
+.article > :first-child {
+  margin-top: 0;
+}
+/* anchor jumps (TOC / permalinks) must clear the 4rem sticky header, not hide under it */
+.article :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 5.5rem;
+}
+.article p,
+.article ul,
+.article ol,
+.article blockquote,
+.article table {
+  color: var(--foreground-body);
+  margin: 0 0 1.4rem;
+}
+.article h1 {
+  font-size: 1.8571rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.1429rem; /* 16px */
+}
+/* The standfirst — the paragraph directly under the title stands well clear of the body. */
+.article h1 + p {
+  margin-bottom: 2.8571rem; /* 40px */
+}
+/* A paragraph that introduces the code block after it belongs *with* it, so close the gap.
+   :has() is a progressive enhancement here — without it the paragraph keeps the default gap. */
+.article p:has(+ .code-block) {
+  margin-bottom: 1.1429rem; /* 16px */
+}
+.article h2 {
+  font-size: 1.1429rem;
+  font-weight: 600;
+  margin: 2.5714rem 0 0.85rem; /* 36px */
+  padding-top: 1.7143rem; /* 24px */
+  border-top: 1px solid var(--border);
+}
+.article h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.8rem 0 0.6rem;
+}
+.article a {
+  color: var(--accent);
+}
+.article a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.article .headerlink {
+  color: var(--border);
+  font-weight: 400;
+  margin-left: 0.4em;
+  text-decoration: none;
+}
+.article .headerlink:hover {
+  color: var(--foreground-subtle);
+  text-decoration: none;
+}
+.article h1 .headerlink {
+  display: none;
+}
+/* Restore the markers. The reset zeroes `list-style` on every ol/ul, as normalize-style resets do,
+   and prose is the only place in this app that renders a list — so it has to ask for them back, or
+   every markdown bullet list renders as unmarked text indented into nothing. */
+.article ul,
+.article ol {
+  padding-left: 1.4rem;
+}
+.article ul {
+  list-style: disc;
+}
+.article ol {
+  list-style: decimal;
+}
+.article li::marker {
+  color: var(--foreground-subtle);
+}
+.article li {
+  margin: 0.3rem 0;
+}
+.article blockquote {
+  border-left: 2px solid var(--border);
+  padding-left: 1rem;
+  color: var(--foreground-muted);
+}
+.article hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+.article img {
+  max-width: 100%;
+}
+.article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9286rem;
+}
+.article th,
+.article td {
+  text-align: left;
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.article th {
+  color: var(--foreground-muted);
+  font-weight: 600;
+}
+/* inline code — pinned mono, independent of --font. Full size, not the usual 0.9em step-down:
+   the body face is already mono, so shrinking it only made inline code look like a typo. */
+.article :not(pre) > code {
+  background: var(--surface);
+  padding: 1px 0.4286rem; /* 6px sides */
+  font-family: var(--code-font);
+  font-size: 1em;
+}
+
+/* --- code blocks (Pygments, near-monochrome) ------------------------------------------------- */
+.code-block {
+  position: relative;
+  margin: 0 0 1.1429rem; /* 16px */
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.code-block pre {
+  margin: 0;
+  padding: 0.9rem 1.1rem;
+  overflow-x: auto;
+}
+.code-block code {
+  font-family: var(--code-font);
+  font-size: 0.9286rem;
+  /* Full emphasis, not the prose step-down: a command you are meant to type is the most
+     important text on the page. Pygments then mutes comments/strings against this. */
+  color: var(--foreground);
+}
+.copy-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-right: none;
+  background: var(--background);
+  color: var(--foreground-muted);
+  font: inherit;
+  font-size: 0.7857rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+}
+.copy-btn:hover {
+  color: var(--foreground);
+  border-color: var(--foreground-subtle);
+}
+/* restrained token colouring keeps code flat/monochrome */
+.highlight .c,
+.highlight .c1,
+.highlight .cm,
+.highlight .cp,
+.highlight .cs {
+  color: var(--foreground-subtle);
+  font-style: italic;
+}
+.highlight .s,
+.highlight .s1,
+.highlight .s2,
+.highlight .sb,
+.highlight .se,
+.highlight .sd {
+  color: var(--foreground-muted);
+}
+
+/* ============================================================================================
+ * Search palette
+ * ============================================================================================ */
+/* :not([hidden]) so the browser's [hidden]{display:none} wins when the controller closes it —
+   a bare `display:flex` here would override it and pin the palette open. */
+/* Top-anchored, not centred: the panel's height changes as the result list is filtered, and
+   centring re-solves the vertical position on every keystroke — the whole palette visibly jumps.
+   Pinned at 90px it only ever grows downwards. */
+.search-dialog:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 6.4286rem 1.5rem 1.5rem; /* 90px top — the anchor */
+  background: color-mix(in oklab, var(--foreground) 28%, transparent);
+}
+/* A column, so the input and the footer keep their intrinsic height and the result list takes
+   what is left — the empty query lists every page, which overflows any viewport otherwise.
+   80vh is the cap; the calc() is the shorter bound on a low viewport, where 90px + 80vh would
+   run off the bottom (align-items: flex-start does not shrink the item to fit). */
+.search-panel {
+  display: flex;
+  flex-direction: column;
+  width: 40rem;
+  max-width: 100%;
+  max-height: min(80vh, calc(100vh - 7.9286rem)); /* 7.9286rem = the 90px top + 21px bottom */
+  background: var(--background);
+  border: 1px solid var(--foreground);
+  box-shadow: 6px 6px 0 color-mix(in oklab, var(--foreground) 35%, transparent);
+}
+.search-top {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.7143rem; /* 10px */
+  padding: 1rem 1.2857rem; /* 14px / 18px */
+  border-bottom: 1px solid var(--border);
+}
+.search-top .k {
+  color: var(--foreground-subtle);
+}
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font: inherit;
+  font-size: 1.0714rem;
+  color: var(--foreground);
+}
+/* The reset ships a fixed grey here; the palette has a stop for exactly this weight of text. */
+.search-input::placeholder {
+  color: var(--foreground-subtle);
+  opacity: 1;
+}
+.search-esc {
+  background: transparent;
+  color: var(--foreground-subtle);
+  cursor: pointer;
+  font: inherit;
+}
+.search-count {
+  flex-shrink: 0;
+  padding: 0.7143rem 1.2857rem 0.2857rem;
+  font-size: 0.7857rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+}
+/* min-height:0 so this is the part that scrolls: a flex child's default `min-height: auto` would
+   let the list push the panel past its max-height instead of overflowing inside it. */
+.search-results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.search-hit {
+  display: block;
+  padding: 0.7143rem 1.2857rem; /* 10px / 18px */
+  border-left: 2px solid transparent;
+}
+.search-hit.is-active {
+  background: var(--surface);
+  border-left-color: var(--foreground);
+}
+.search-hit-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.4286rem; /* 20px */
+}
+.search-hit-title {
+  font-size: 0.9286rem; /* 13px */
+}
+.search-hit-section {
+  color: var(--foreground-subtle);
+  font-size: 0.8571rem;
+}
+.search-hit-preview {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--foreground-muted);
+  font-size: 0.8571rem;
+  line-height: 1.6;
+}
+.search-foot {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1.1429rem; /* 16px */
+  padding: 0.5714rem 1.2857rem; /* 8px / 18px */
+  border-top: 1px solid var(--border);
+  font-size: 0.8214rem;
+  color: var(--foreground-subtle);
+}
+
+/* ============================================================================================
+ * Responsive — staged ladder (ADR/BUILD-PLAN §6): lg drops the TOC rail to an inline box, md
+ * drops the sidebar to a hamburger drawer.
+ * ============================================================================================ */
+@media (max-width: 1023px) {
+  .docs-shell {
+    grid-template-columns: minmax(12.8rem, 15.7rem) minmax(0, 1fr);
+  }
+  .docs-toc--rail {
+    display: none;
+  }
+  .docs-toc--inline {
+    display: flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .docs-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .docs-hamburger {
+    display: inline-flex;
+  }
+  .docs-main {
+    border-left: none;
+    padding-left: 0;
+    padding-top: 2rem;
+  }
+  .docs-breadcrumb {
+    display: none;
+  }
+  .docs-search-trigger {
+    width: auto;
+  }
+  .docs-search-trigger .label {
+    display: none;
+  }
+  /* The llm links move out of the crowded header and into the drawer. */
+  .docs-header-link--llm {
+    display: none;
+  }
+  .docs-nav-group--llm {
+    display: flex;
+  }
+  .docs-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    width: 17rem;
+    max-width: 80vw;
+    height: 100%;
+    padding: 1.5rem;
+    background: var(--background);
+    border-right: 1px solid var(--border);
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+    max-height: none; /* the drawer is full-height (top:0), not offset below the header */
+    overflow-y: auto;
+  }
+  .docs-sidebar.is-open {
+    transform: translateX(0);
+  }
+  .docs-body.is-open .docs-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: color-mix(in oklab, var(--foreground) 28%, transparent);
+  }
+}
