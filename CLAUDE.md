@@ -21,9 +21,12 @@ their distributable variant, and a few app-only ones don't apply at all. These a
 
 - **Packaging:** `[project]` + hatchling (built, distributed), not PEP-735 run-not-built. The wheel
   ships `mdjango/` (templates + compiled `static/`); it excludes `tests`, `conftest.py`, the theme
-  *source* (`theme/`), and the `example/` harness.
-- **No `config/` settings package.** Configuration is read from the *consumer's* settings via
-  `mdjango/conf.py`. The `example/` project is the dev/test harness (a stand-in consumer).
+  *source* (`theme/`), and the `site/` harness.
+- **No `config/` settings package (in the package).** mdjango reads the *consumer's* settings via
+  `mdjango/conf.py`. That consumer is the in-repo `site/` project — mdjango's self-hosted docs site,
+  also the dev/test harness and canonical mount example (ADR 0006) — which carries its *own*
+  `config/` settings package. The project package can't be named `site`: that shadows the stdlib
+  `site` module, so it's `config.settings` with `site/` added to the path (as walden's `site/` does).
 - **Assets vendored, no CDN, no consumer build, no toolchain.** One shipped stylesheet, built by
   `theme/build.sh` concatenating `theme/src/{fonts,reset,house}.css` through `theme/bundle.py` —
   **no Tailwind** (ADR 0005: it generated zero utilities and cost 2.2KB of `--tw-*` variables, a
@@ -59,7 +62,7 @@ their distributable variant, and a few app-only ones don't apply at all. These a
 
 ```bash
 ./theme/build.sh            # compile the stylesheets (python3 only; --watch to rebuild on change)
-python manage.py runserver  # serves example/ + demo content
+python manage.py runserver  # serves site/ + its docs content
 pytest                      # content + rendering (beside code) + view/integration (mdjango/tests/)
 ruff check . && ruff format .
 ```

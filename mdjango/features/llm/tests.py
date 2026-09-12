@@ -1,4 +1,8 @@
-"""Unit tests for the LLM-artifact builder (beside the code, per the stack convention)."""
+"""Unit tests for the LLM-artifact builder (beside the code, per the stack convention).
+
+The ``builder`` fixture runs over the package-wide fixture content tree (``mdjango/conftest.py``),
+never over the real docs under ``site/content/``.
+"""
 
 from __future__ import annotations
 
@@ -36,10 +40,10 @@ def _page(body: str, title: str = "T", path: str = "x") -> Page:
 
 def test_index_groups_pages_by_section_and_links_to_markdown(builder):
     index = builder.index()
-    assert index.startswith("# walden docs")
+    assert index.startswith("# Fixture Docs")
     assert "## Getting started" in index
     # a page links to its .md alternate (not the HTML page), with its description after a colon
-    assert "- [Quickstart](/docs/getting-started/quickstart.md): Takes a fresh VPS" in index
+    assert "- [Quickstart](/docs/getting-started/quickstart.md): Get going in a minute." in index
 
 
 def test_index_nests_a_subsection_under_its_section(builder):
@@ -58,10 +62,10 @@ def test_index_never_files_a_section_page_under_a_subsection_heading(builder):
 
 def test_full_concatenates_every_page_in_nav_order(builder):
     full = builder.full()
-    assert full.startswith("# walden docs")
-    # separator between each of the 10 pages (+ leading title block)
-    assert full.count("\n---\n") >= 10
-    assert "podman volume" in full  # body text from guides/databases-and-volumes
+    assert full.startswith("# Fixture Docs")
+    # separator between each of the 8 fixture pages (+ leading title block)
+    assert full.count("\n---\n") >= 8
+    assert "podman volume" in full  # body text from the fixture's guides/databases-and-volumes
 
 
 def test_page_markdown_prepends_the_title_when_the_body_has_no_heading():

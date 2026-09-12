@@ -8,8 +8,15 @@ This file is a **glossary**, not a spec. Implementation decisions live in `docs/
 
 ## Glossary
 
-**Consumer** — a Django project that installs `mdjango` and mounts it. `walden`'s `site/` is the
-first consumer. mdjango graduates to its own repo/PyPI when a second consumer appears.
+**Consumer** — a Django project that installs `mdjango` and mounts it. mdjango ships as a
+standalone package and is **its own first Consumer**: its `site/` project mounts mdjango to serve
+mdjango's own documentation (see **Self-hosted site**).
+
+**Self-hosted site** — mdjango's own public docs site, served by the `site/` project in this repo
+(the promoted former `example/` harness): a stand-in Consumer that mounts mdjango and points it at
+mdjango's *real* documentation. It wears the unmodified **House style** — no **Seed** overrides, no
+shadowed **Shell** — so it doubles as the canonical reference mount; the **Override surface** is
+taught in the docs prose, not here. Not shipped in the wheel.
 
 **Content tree** — the directory of markdown files a Consumer points mdjango at. The filesystem
 is the whole source of truth: there is no database, and every published URL comes from a file in

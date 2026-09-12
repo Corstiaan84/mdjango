@@ -1,4 +1,4 @@
-"""End-to-end serving: the example project's real content through the full cotton shell.
+"""End-to-end serving: a self-owned fixture content tree (see conftest.py) through the shell.
 
 Uses pytest-django's built-in ``client`` fixture; the registry cache is reset per test by the
 autouse fixture in the package ``conftest.py``.
@@ -6,6 +6,7 @@ autouse fixture in the package ``conftest.py``.
 
 from __future__ import annotations
 
+import copy
 from unittest import mock
 
 from mdjango.features.content.services import RegistryBuilder
@@ -14,7 +15,7 @@ from mdjango.features.content.services import RegistryBuilder
 def test_index_serves_first_page(client):
     r = client.get("/docs/")
     assert r.status_code == 200
-    assert b"<title>walden docs</title>" in r.content
+    assert b"<title>Fixture Docs</title>" in r.content
     assert b'class="docs-header"' in r.content
 
 
@@ -143,7 +144,7 @@ def test_search_index_json(client):
     assert r.status_code == 200
     assert r["Content-Type"] == "application/json"
     docs = r.json()
-    assert len(docs) == 12
+    assert len(docs) == 8  # root Index page + 2 getting-started + 5 guides pages
     by_title = {d["title"]: d for d in docs}
     assert "Databases and volumes" in by_title
     # full body text is indexed, not just the description
@@ -204,7 +205,7 @@ def test_llms_txt_lists_pages_linking_to_markdown(client):
     assert r.status_code == 200
     assert r["Content-Type"] == "text/markdown; charset=utf-8"
     body = r.content.decode()
-    assert body.startswith("# walden docs")
+    assert body.startswith("# Fixture Docs")
     assert "](/docs/getting-started/quickstart.md)" in body
 
 
@@ -280,6 +281,26 @@ def test_llm_docs_toggle_off_darkens_the_whole_surface(client, settings):
 
     # search is untouched — it is not part of the llm-docs surface
     assert client.get("/docs/search-index.json").status_code == 200
+
+
+# --- shell override (ADR 0003 §3) ------------------------------------------------------------
+
+
+def test_a_consumer_shadows_a_shell_component_from_its_templates_dir(client, settings, tmp_path):
+    """The escape hatch: a ``cotton/docs/<component>.html`` in the consumer's ``TEMPLATES[DIRS]``
+    replaces mdjango's. Cotton's loader chain (cotton -> filesystem -> app_directories) is what
+    makes DIRS win; this pins that, since the docs teach it as the override mechanism."""
+    (tmp_path / "cotton" / "docs").mkdir(parents=True)
+    (tmp_path / "cotton" / "docs" / "header.html").write_text(
+        '<header class="docs-header">SHADOWED {{ conf.brand }}</header>', encoding="utf-8"
+    )
+    templates = copy.deepcopy(settings.TEMPLATES)
+    templates[0]["DIRS"] = [str(tmp_path)]
+    settings.TEMPLATES = templates
+
+    body = client.get("/docs/getting-started/quickstart/").content.decode()
+    assert "SHADOWED fixture" in body
+    assert "docs-search-trigger" not in body  # the shipped header is gone, not appended to
 
 
 # --- response caching (ADR 0002) -------------------------------------------------------------

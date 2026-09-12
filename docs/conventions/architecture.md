@@ -50,8 +50,8 @@ own:
 - **Assets are vendored, never CDN-loaded** — a distributable can't assume a consumer's network or
   CSP, and must work in a static export. Ship a precompiled stylesheet and vendored JS; require **no
   consumer build step**. (An app-project may instead pull libs from a CDN via an import map.)
-- **A dev/test harness** (`example/` + `manage.py`) stands in for the missing project: it's an
-  example consumer that configures the app and serves demo content, and is the pytest target. It is
+- **A dev/test harness** (`site/` + `manage.py`) stands in for the missing project: it's an
+  example consumer that configures the app and serves its docs content, and is the pytest target. It is
   dev-only — excluded from the wheel.
 - App-shaped concerns that don't apply: multi-tenancy, forms, migrations, a project `settings.py`.
 
