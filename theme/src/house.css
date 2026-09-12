@@ -206,10 +206,18 @@ body.docs-body {
      the 4rem header, so its own scroll region is the viewport minus that header. */
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  /* overflow-y:auto forces overflow-x to compute to `auto` as well — a `visible` axis cannot pair
+     with a clipped one — so this box clips horizontally the moment the nav is tall enough to
+     scroll. The active link hangs its 2px marker 0.85rem left of the text via a negative margin
+     (see .docs-nav-link.is-active), which would then land outside the box and be clipped away.
+     Pull the whole box left by that 0.85rem and give it back as left padding: the content stays
+     put, but the box now extends far enough left that the hanging marker sits inside the clip. */
+  margin-left: -0.85rem;
   display: flex;
   flex-direction: column;
   gap: 2rem; /* 28px */
-  padding: 3.4286rem 0; /* 48px */
+  padding: 3.4286rem 0 3.4286rem 0.85rem; /* 48px; left 0.85rem == the active marker's overhang */
   font-size: 0.9286rem;
 }
 .docs-nav-group {
@@ -321,9 +329,34 @@ body.docs-body {
 .docs-toc--rail {
   position: sticky;
   top: 4rem;
-  padding: 3.7143rem 0; /* 52px */
+  /* Same overflow-x clip as the sidebar (see .docs-sidebar): keep the active link's -0.85rem
+     marker inside the box once a long TOC scrolls. Left padding cancels the pull, so content
+     stays put; the box extends 0.85rem into the column gap on its left, which has room. */
+  margin-left: -0.85rem;
+  padding: 3.7143rem 0 3.7143rem 0.85rem; /* 52px; left 0.85rem == the active marker's overhang */
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
+}
+/* Thin, hairline-toned scrollbars on the two sticky scroll columns (the sidebar and this rail), so
+   a long nav or TOC shows a restrained bar rather than the platform default. Uses --border, so it
+   tracks the theme. Placed after both scroll rules so a per-selector rule lookup finds those first. */
+.docs-sidebar,
+.docs-toc--rail {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--border) transparent;
+}
+.docs-sidebar::-webkit-scrollbar,
+.docs-toc--rail::-webkit-scrollbar {
+  width: 6px;
+}
+.docs-sidebar::-webkit-scrollbar-thumb,
+.docs-toc--rail::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.docs-sidebar::-webkit-scrollbar-track,
+.docs-toc--rail::-webkit-scrollbar-track {
+  background: transparent;
 }
 .docs-toc--inline {
   display: none;
