@@ -27,7 +27,7 @@ build-backend = "hatchling.build"
 
 # hatchling ships everything under the `mdjango/` package — templates, the compiled stylesheet,
 # and the vendored JS in `static/`. The theme *source* (`theme/src/`, the build script) and the
-# example project and tests are build-time / dev-only, so the wheel excludes them; the sdist keeps
+# site project and tests are build-time / dev-only, so the wheel excludes them; the sdist keeps
 # them so a downstream can rebuild the stylesheet from source.
 [tool.hatch.build.targets.wheel]
 packages = ["mdjango"]
@@ -42,9 +42,9 @@ target-version = "py311"
 select = ["E", "F", "I", "UP", "B", "DJ"]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "example.settings"
+DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 # business tests live beside the code (mdjango/features/{concept}/tests.py); view/integration
 # tests in mdjango/tests/ — both under the package, so one testpath covers them.
 testpaths = ["mdjango"]
-pythonpath = ["."]
+pythonpath = [".", "site"]

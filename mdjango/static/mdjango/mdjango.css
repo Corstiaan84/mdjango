@@ -354,10 +354,13 @@ body.docs-body {
   top: 4rem;
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  margin-left: -0.85rem;
+  margin-right: calc(-1 * clamp(28px, 4vw, 64px));
   display: flex;
   flex-direction: column;
   gap: 2rem; 
-  padding: 3.4286rem 0; 
+  padding: 3.4286rem 0.85rem; 
   font-size: 0.9286rem;
 }
 .docs-nav-group {
@@ -445,9 +448,40 @@ body.docs-body {
 .docs-toc--rail {
   position: sticky;
   top: 4rem;
-  padding: 3.7143rem 0; 
+  margin-left: -0.85rem;
+  padding: 3.7143rem 0 3.7143rem 0.85rem; 
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
+}
+.docs-sidebar,
+.docs-toc--rail {
+  scrollbar-width: thin; 
+  scrollbar-color: transparent transparent; 
+}
+.docs-sidebar:hover,
+.docs-sidebar:focus-within,
+.docs-toc--rail:hover,
+.docs-toc--rail:focus-within {
+  scrollbar-color: var(--border) transparent;
+}
+.docs-sidebar::-webkit-scrollbar,
+.docs-toc--rail::-webkit-scrollbar {
+  width: 8px;
+}
+.docs-sidebar::-webkit-scrollbar-thumb,
+.docs-toc--rail::-webkit-scrollbar-thumb {
+  background: transparent; 
+  border-radius: 4px;
+}
+.docs-sidebar:hover::-webkit-scrollbar-thumb,
+.docs-sidebar:focus-within::-webkit-scrollbar-thumb,
+.docs-toc--rail:hover::-webkit-scrollbar-thumb,
+.docs-toc--rail:focus-within::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+.docs-sidebar::-webkit-scrollbar-track,
+.docs-toc--rail::-webkit-scrollbar-track {
+  background: transparent;
 }
 .docs-toc--inline {
   display: none;
@@ -804,6 +838,7 @@ body.docs-body {
     width: 17rem;
     max-width: 80vw;
     height: 100%;
+    margin: 0; 
     padding: 1.5rem;
     background: var(--background);
     border-right: 1px solid var(--border);

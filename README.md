@@ -1,14 +1,14 @@
 # mdjango
 
 A reusable, drop-in **markdown-documentation Django app**. Point it at a tree of markdown and get
-a themed documentation site — served at runtime, and (forthcoming) exported static. One
-opinionated house style; five CSS knobs to make it yours. See `CONTEXT.md` for the glossary and
+a themed documentation site — served at runtime, or exported static with `mdjango_build`. One
+opinionated house style; seven CSS seeds to make it yours. See `CONTEXT.md` for the glossary and
 `docs/adr/` for the decisions.
 
-> Status: **scaffold**. Runtime serving, the render/registry core, the self-shelled theme, dark
-> mode, code-copy, scroll-spy and a (placeholder) search palette all work end-to-end. Static
-> export, MiniSearch, LLM artifacts and response caching are the next increments — see
-> `design/BUILD-PLAN.md`.
+> Status: **pre-release** (`0.1.0.dev0`, not yet on PyPI). Runtime serving, the render/registry
+> core, the self-shelled theme, dark mode, code-copy, scroll-spy, MiniSearch, the `llms.txt`
+> artifacts, response caching and the static export all work end-to-end. The full documentation
+> lives in `site/content/` and is what the `site/` project serves (ADR 0006).
 
 ## Install (consumer)
 
@@ -27,10 +27,12 @@ INSTALLED_APPS = [
 ]
 
 MDJANGO_CONTENT_DIR = BASE_DIR / "content"   # your markdown tree (required)
-MDJANGO_BRAND = "walden"                     # wordmark / <title>
-MDJANGO_VERSION = "v0.4.2"                   # display string
-MDJANGO_GITHUB_URL = "https://github.com/you/walden"
-# MDJANGO_HOME_URL, MDJANGO_SITE_TITLE, MDJANGO_HEADER_LINKS also available.
+MDJANGO_BRAND = "acme"                       # wordmark / <title>
+MDJANGO_VERSION = "v2.3.0"                   # display string
+MDJANGO_GITHUB_URL = "https://github.com/acme/acme"
+# Also: MDJANGO_HOME_URL, MDJANGO_SITE_TITLE, MDJANGO_HEADER_LINKS, MDJANGO_DESCRIPTION,
+# MDJANGO_LLM_DOCS, MDJANGO_INCLUDE_DRAFTS, MDJANGO_ALWAYS_REBUILD, MDJANGO_CACHE_SECONDS —
+# see site/content/reference/settings.md.
 ```
 
 ```python
@@ -111,9 +113,10 @@ shared with `mdjango.css`, so the browser fetches each face once across both sty
 python -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
 ./theme/build.sh            # compile the stylesheets (python3 only; --watch to rebuild on change)
-python manage.py runserver  # serves the example/ project + demo content
-pytest                      # 22 tests: content model, render pipeline, end-to-end serving
+python manage.py runserver  # serves the site/ project + its docs content
+pytest                      # content model, render pipeline, end-to-end serving (fixture tree)
+python manage.py mdjango_build --check   # the content gate for site/content/
 ```
 
-The theme *source* (`theme/`), the `example/` project and `tests/` are dev-only; the wheel ships
+The theme *source* (`theme/`), the `site/` project and `tests/` are dev-only; the wheel ships
 just the `mdjango/` package (templates + compiled `static/`).

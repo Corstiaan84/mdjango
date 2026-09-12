@@ -1,4 +1,4 @@
-"""End-to-end: the mdjango_build command over the example content."""
+"""End-to-end: the mdjango_build command over the fixture content tree (see conftest.py)."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def test_build_writes_the_llm_artifacts(tmp_path):
     call_command("mdjango_build", str(out))
 
     # the two site-wide artifacts
-    assert (out / "docs" / "llms.txt").read_text().startswith("# walden docs")
+    assert (out / "docs" / "llms.txt").read_text().startswith("# Fixture Docs")
     assert "podman volume" in (out / "docs" / "llms-full.txt").read_text()
     # per-page markdown, mirroring the HTML tree (incl. the landing at index.md)
     assert (out / "docs" / "index.md").exists()

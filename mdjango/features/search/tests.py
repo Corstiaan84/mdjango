@@ -1,4 +1,4 @@
-"""Search service: HTML stripping and index building over the example content."""
+"""Search service: HTML stripping and index building over synthetic content trees."""
 
 from __future__ import annotations
 
