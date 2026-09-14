@@ -1,0 +1,24 @@
+/* Ocean — cool blue, blue accent */
+:root {
+  --background: #f4f7fb;
+  --border: #d6e0ec;
+  --foreground: #16202e;
+  --foreground-subtle: #6b7d93;
+  --accent: #2563eb;
+}
+:root[data-theme="dark"] {
+  --background: #0e1620;
+  --border: #263243;
+  --foreground: #e6edf5;
+  --foreground-subtle: #7c8a9c;
+  --accent: #5b9dff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0e1620;
+    --border: #263243;
+    --foreground: #e6edf5;
+    --foreground-subtle: #7c8a9c;
+    --accent: #5b9dff;
+  }
+}

@@ -1,0 +1,27 @@
+/* Stripe — cool blue-slate, deep-navy dark, indigo accent, UI sans (aesthetic homage) */
+:root {
+  --background: #f6f9fc;
+  --border: #e3e8ee;
+  --foreground: #0a2540;
+  --foreground-subtle: #697386;
+  --accent: #635bff;
+  /* system UI sans; code stays mono via --code-font */
+  --font: "Segoe UI", system-ui, Roboto, sans-serif;
+  --font-size: 15px;
+}
+:root[data-theme="dark"] {
+  --background: #0a0e27;
+  --border: #232748;
+  --foreground: #eef1f8;
+  --foreground-subtle: #878db3;
+  --accent: #8b85ff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0a0e27;
+    --border: #232748;
+    --foreground: #eef1f8;
+    --foreground-subtle: #878db3;
+    --accent: #8b85ff;
+  }
+}
