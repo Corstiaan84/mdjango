@@ -51,6 +51,7 @@ without a closing `---` is treated as body. Unknown keys are ignored.
 | `weight` | integer | `100` | a non-integer value falls back to the default |
 | `draft` | boolean | `false` | accepts `true`/`yes`/`on` and `false`/`no`/`off`, case-insensitive. Anything else is the default. |
 | `description` | string | `""` | suffix of the Page's `llms.txt` entry. Page-level only. |
+| `updated` | date | none | ISO-8601 `YYYY-MM-DD`. Feeds the Page's sitemap `<lastmod>`; omitted when absent. A malformed value is ignored with a build warning (never file mtime — a checkout would make it wrong). Page-level only. See [Make your docs discoverable](../../how-to/make-docs-discoverable/). |
 
 The first-heading fallback matches a `#` line with up to three leading spaces and optional closing
 `#`s.

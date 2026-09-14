@@ -27,6 +27,7 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps",  # ships the sitemap.xml template the DocsSitemap view renders
     "django_cotton",  # auto-wires the cotton template loader
     "mdjango",
 ]

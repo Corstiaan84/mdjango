@@ -12,17 +12,17 @@ def test_build_exports_a_self_contained_dist(tmp_path):
     call_command("mdjango_build", str(out))
 
     # dir-per-page, mirroring the live URL tree
-    assert (out / "docs" / "index.html").exists()
-    assert (out / "docs" / "getting-started" / "quickstart" / "index.html").exists()
+    assert (out / "index.html").exists()
+    assert (out / "getting-started" / "quickstart" / "index.html").exists()
     # the search index, served as a file
-    assert (out / "docs" / "search-index.json").exists()
+    assert (out / "search-index.json").exists()
     # vendored assets copied under the static prefix
     assert (out / "static" / "mdjango" / "mdjango.css").exists()
     assert (out / "static" / "mdjango" / "application.js").exists()
 
-    html = (out / "docs" / "getting-started" / "quickstart" / "index.html").read_text()
+    html = (out / "getting-started" / "quickstart" / "index.html").read_text()
     assert "Quickstart" in html
-    assert 'data-search-index-url="/docs/search-index.json"' in html
+    assert 'data-search-index-url="/search-index.json"' in html
 
 
 def test_build_writes_the_llm_artifacts(tmp_path):
@@ -30,11 +30,11 @@ def test_build_writes_the_llm_artifacts(tmp_path):
     call_command("mdjango_build", str(out))
 
     # the two site-wide artifacts
-    assert (out / "docs" / "llms.txt").read_text().startswith("# Fixture Docs")
-    assert "podman volume" in (out / "docs" / "llms-full.txt").read_text()
+    assert (out / "llms.txt").read_text().startswith("# Fixture Docs")
+    assert "podman volume" in (out / "llms-full.txt").read_text()
     # per-page markdown, mirroring the HTML tree (incl. the landing at index.md)
-    assert (out / "docs" / "index.md").exists()
-    page_md = (out / "docs" / "getting-started" / "quickstart.md").read_text()
+    assert (out / "index.md").exists()
+    page_md = (out / "getting-started" / "quickstart.md").read_text()
     assert page_md.startswith("# Quickstart")
 
 
@@ -57,9 +57,9 @@ def test_llm_docs_off_skips_the_llm_artifacts(tmp_path, settings):
     call_command("mdjango_build", str(out))
 
     # pages + the search index are still written; the whole markdown/llm surface is not
-    assert (out / "docs" / "index.html").exists()
-    assert (out / "docs" / "search-index.json").exists()
-    assert not (out / "docs" / "llms.txt").exists()
-    assert not (out / "docs" / "llms-full.txt").exists()
-    assert not (out / "docs" / "index.md").exists()
-    assert not (out / "docs" / "getting-started" / "quickstart.md").exists()
+    assert (out / "index.html").exists()
+    assert (out / "search-index.json").exists()
+    assert not (out / "llms.txt").exists()
+    assert not (out / "llms-full.txt").exists()
+    assert not (out / "index.md").exists()
+    assert not (out / "getting-started" / "quickstart.md").exists()

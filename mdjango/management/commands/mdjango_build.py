@@ -20,6 +20,7 @@ from mdjango.features.content.services import RegistryBuilder
 from mdjango.features.export.services import DistExporter
 from mdjango.features.llm.services import LlmArtifactBuilder
 from mdjango.features.search.services import SearchIndexer
+from mdjango.sitemaps import render_sitemap_xml, sitemap_pages
 from mdjango.views import page_markdown_url, page_url, render_page_html
 
 
@@ -37,6 +38,16 @@ class Command(BaseCommand):
             "--check",
             action="store_true",
             help="Validate content and render every page without writing (the CI content gate).",
+        )
+        parser.add_argument(
+            "--base-url",
+            default="",
+            metavar="URL",
+            help=(
+                "Site origin (e.g. https://docs.example.com) for an absolute-URL sitemap.xml at "
+                "the dist root. Omitted: no sitemap is written (the runtime derives its own domain "
+                "from the request, so this is only needed for the static export)."
+            ),
         )
 
     def handle(self, *args, **options):
@@ -57,7 +68,8 @@ class Command(BaseCommand):
             return
 
         rendered = [(url, render_page_html(page)) for url, page in targets]
-        result = DistExporter(options["output_dir"]).build(
+        exporter = DistExporter(options["output_dir"])
+        result = exporter.build(
             rendered_pages=rendered,
             search_index_url=reverse("mdjango:search_index"),
             search_index=SearchIndexer.cached(),
@@ -71,6 +83,13 @@ class Command(BaseCommand):
                 f"+ {result.static_files} static files to {result.output_dir}"
             )
         )
+
+        # A sitemap needs absolute URLs, which only exist when a domain is supplied. It sits at the
+        # dist root (not under the mount) because a sitemap.xml is served from the site root.
+        if options["base_url"]:
+            xml = render_sitemap_xml(sitemap_pages(registry), options["base_url"])
+            path = exporter.write_text_asset("sitemap.xml", xml)
+            self.stdout.write(self.style.SUCCESS(f"wrote {path}"))
 
     def _llm_artifacts(self, registry) -> list[tuple[str, str]]:
         """The ``(url, text)`` LLM files to write into the dist: ``llms.txt``, ``llms-full.txt``,

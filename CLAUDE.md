@@ -56,6 +56,14 @@ their distributable variant, and a few app-only ones don't apply at all. These a
 - **The response cache is view plumbing, not a service** (`views/common/caching.py`, ADR 0002): it
   is HTTP-coupled (touches `request`/`HttpResponse`, sets `ETag`/`Cache-Control`, returns `304`), so
   it lives in the view layer per the interface-agnostic-services rule — services stay HTTP-free.
+- **The `Sitemap` lives at the package top level** (`mdjango/sitemaps.py`, ADR 0007), *not* under
+  `views/common/`, even though it is HTTP-coupled (it reads `request` for the host) the way the
+  response cache is. A `Sitemap` is a framework-defined artifact with a canonical import path every
+  Django dev expects (`from mdjango.sitemaps import DocsSitemap`); the response cache is bespoke.
+  mdjango ships only the class — the Consumer owns the route, and the **domain enters the package at
+  exactly one boundary, the `mdjango_build --base-url` flag, never a setting** (the `settings.md`
+  "no canonical-URL setting" invariant). `robots.txt`/`.well-known` are the operator's domain root,
+  documented not shipped.
 - **N/A:** multi-tenancy, forms, migrations, Turbo — mdjango has no users, no DB, no mutations.
 
 ## Dev

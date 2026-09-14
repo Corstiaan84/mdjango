@@ -14,6 +14,7 @@ interleaved by weight — so nav order is the model's order, not something a con
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 
 
@@ -31,6 +32,10 @@ class Page:
     draft: bool
     source: Path
     body: str
+    # Optional author-set last-updated date (frontmatter `updated: YYYY-MM-DD`), feeding the
+    # sitemap's <lastmod>. Deliberately not file mtime — a git/CI checkout stamps every file with
+    # the checkout time, so mtime would be identical and wrong across pages (ADR 0007).
+    updated: date | None = None
     section: Section | None = None  # the top-level Section, whatever the depth
     subsection: Subsection | None = None  # set only for a page inside a Subsection
 

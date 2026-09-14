@@ -43,14 +43,14 @@ def test_index_groups_pages_by_section_and_links_to_markdown(builder):
     assert index.startswith("# Fixture Docs")
     assert "## Getting started" in index
     # a page links to its .md alternate (not the HTML page), with its description after a colon
-    assert "- [Quickstart](/docs/getting-started/quickstart.md): Get going in a minute." in index
+    assert "- [Quickstart](/getting-started/quickstart.md): Get going in a minute." in index
 
 
 def test_index_nests_a_subsection_under_its_section(builder):
     index = builder.index()
     section, subsection = index.index("## Guides"), index.index("### Networking")
     assert section < subsection  # the subsection nests under its section, not beside it
-    assert "- [Ingress](/docs/guides/networking/ingress.md)" in index
+    assert "- [Ingress](/guides/networking/ingress.md)" in index
 
 
 def test_index_never_files_a_section_page_under_a_subsection_heading(builder):
