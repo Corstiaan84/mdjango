@@ -33,4 +33,4 @@ def test_index_has_one_entry_per_page_with_fields(tmp_path, settings):
     assert deploy["section"] == "Guides"
     assert "walden up" in deploy["text"]  # full body text, not just the description
     assert deploy["url"].endswith("/guides/deploy/")
-    assert by_title["Home"]["url"].endswith("/docs/")  # the index page
+    assert by_title["Home"]["url"] == "/"  # the index page (mounted at root)

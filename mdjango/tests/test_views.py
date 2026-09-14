@@ -13,14 +13,14 @@ from mdjango.features.content.services import RegistryBuilder
 
 
 def test_index_serves_first_page(client):
-    r = client.get("/docs/")
+    r = client.get("/")
     assert r.status_code == 200
     assert b"<title>Fixture Docs</title>" in r.content
     assert b'class="docs-header"' in r.content
 
 
 def test_page_renders_shell_and_article(client):
-    r = client.get("/docs/getting-started/quickstart/")
+    r = client.get("/getting-started/quickstart/")
     assert r.status_code == 200
     body = r.content.decode()
     assert 'id="install"' in body  # article content
@@ -31,7 +31,7 @@ def test_page_renders_shell_and_article(client):
 
 
 def test_active_nav_marks_current_page(client):
-    body = client.get("/docs/guides/secrets/").content.decode()
+    body = client.get("/guides/secrets/").content.decode()
     assert 'docs-nav-link is-active">Secrets</a>' in body
 
 
@@ -56,12 +56,12 @@ def test_home_link_pinned_above_sections_when_a_root_index_exists(client, settin
 
     # On an ordinary page the Home link is present, points at the mount root, and sits above
     # every Section — but is not marked active.
-    sidebar = _sidebar(client.get("/docs/guides/intro/").content.decode())
-    assert '<a href="/docs/" class="docs-nav-link">Docs home</a>' in sidebar
+    sidebar = _sidebar(client.get("/guides/intro/").content.decode())
+    assert '<a href="/" class="docs-nav-link">Docs home</a>' in sidebar
     assert sidebar.index("Docs home") < sidebar.index("Guides")
 
     # On the landing itself the Home link is the active nav entry.
-    landing = _sidebar(client.get("/docs/").content.decode())
+    landing = _sidebar(client.get("/").content.decode())
     assert 'docs-nav-link is-active">Docs home</a>' in landing
 
 
@@ -73,12 +73,12 @@ def test_no_home_link_without_a_root_index(client, settings, tmp_path):
     settings.MDJANGO_CONTENT_DIR = tmp_path
     RegistryBuilder.clear_cache()
 
-    sidebar = _sidebar(client.get("/docs/guides/intro/").content.decode())
-    assert 'href="/docs/"' not in sidebar
+    sidebar = _sidebar(client.get("/guides/intro/").content.decode())
+    assert 'href="/"' not in sidebar
 
 
 def test_breadcrumb_shows_section_and_page(client):
-    body = client.get("/docs/getting-started/quickstart/").content.decode()
+    body = client.get("/getting-started/quickstart/").content.decode()
     assert "Getting started" in body
     assert "Quickstart" in body
 
@@ -88,7 +88,7 @@ def _breadcrumb(body: str) -> str:
 
 
 def test_breadcrumb_of_a_subsection_page_shows_the_whole_trail(client):
-    crumbs = _breadcrumb(client.get("/docs/guides/networking/ingress/").content.decode())
+    crumbs = _breadcrumb(client.get("/guides/networking/ingress/").content.decode())
     assert crumbs.count("<span>") == 3  # section / subsection / page, none of them links
     assert "Guides" in crumbs and "Networking" in crumbs and "Ingress" in crumbs
 
@@ -96,13 +96,13 @@ def test_breadcrumb_of_a_subsection_page_shows_the_whole_trail(client):
 def test_eyebrow_shows_the_innermost_group(client):
     assert (
         '<p class="docs-eyebrow">Getting started</p>'
-        in client.get("/docs/getting-started/quickstart/").content.decode()
+        in client.get("/getting-started/quickstart/").content.decode()
     )
     # a page inside a subsection shows the subsection, not the section — the header breadcrumb
     # already carries the whole trail
     assert (
         '<p class="docs-eyebrow">Networking</p>'
-        in client.get("/docs/guides/networking/ingress/").content.decode()
+        in client.get("/guides/networking/ingress/").content.decode()
     )
 
 
@@ -111,20 +111,20 @@ def _sidebar(body: str) -> str:
 
 
 def test_subsection_renders_as_a_collapsible_open_on_the_current_page(client):
-    nav = _sidebar(client.get("/docs/guides/networking/ingress/").content.decode())
+    nav = _sidebar(client.get("/guides/networking/ingress/").content.decode())
     assert '<details class="docs-nav-sub" open>' in nav
     assert '<summary class="docs-nav-sublabel">Networking</summary>' in nav
     assert 'docs-nav-link is-active">Ingress</a>' in nav
 
 
 def test_subsection_is_collapsed_when_the_current_page_is_elsewhere(client):
-    nav = _sidebar(client.get("/docs/guides/secrets/").content.decode())
+    nav = _sidebar(client.get("/guides/secrets/").content.decode())
     assert '<details class="docs-nav-sub">' in nav  # no `open`
     assert "Networking" in nav  # the label is still there, its pages just start hidden
 
 
 def test_a_subsection_sits_at_its_weight_among_its_section_siblings(client):
-    nav = _sidebar(client.get("/docs/guides/secrets/").content.decode())
+    nav = _sidebar(client.get("/guides/secrets/").content.decode())
     order = [
         chunk
         for chunk in ("Backups and restores", "Networking", "Scheduled jobs", "Secrets")
@@ -135,12 +135,12 @@ def test_a_subsection_sits_at_its_weight_among_its_section_siblings(client):
 
 
 def test_page_points_at_the_search_index(client):
-    body = client.get("/docs/").content.decode()
-    assert 'data-search-index-url="/docs/search-index.json"' in body
+    body = client.get("/").content.decode()
+    assert 'data-search-index-url="/search-index.json"' in body
 
 
 def test_search_index_json(client):
-    r = client.get("/docs/search-index.json")
+    r = client.get("/search-index.json")
     assert r.status_code == 200
     assert r["Content-Type"] == "application/json"
     docs = r.json()
@@ -149,14 +149,14 @@ def test_search_index_json(client):
     assert "Databases and volumes" in by_title
     # full body text is indexed, not just the description
     assert "podman volume" in by_title["Databases and volumes"]["text"]
-    assert by_title["Quickstart"]["url"] == "/docs/getting-started/quickstart/"
+    assert by_title["Quickstart"]["url"] == "/getting-started/quickstart/"
     # a subsection page carries its whole trail and its deeper URL (ADR 0004 §6)
     assert by_title["Ingress"]["section"] == "Guides / Networking"
-    assert by_title["Ingress"]["url"] == "/docs/guides/networking/ingress/"
+    assert by_title["Ingress"]["url"] == "/guides/networking/ingress/"
 
 
 def test_pager_links_next(client):
-    body = client.get("/docs/getting-started/quickstart/").content.decode()
+    body = client.get("/getting-started/quickstart/").content.decode()
     assert "docs-pager" in body
     assert "Preparing a server" in body
 
@@ -167,18 +167,18 @@ def test_pager_links_render_while_rebuilding(client, settings):
     # identity, or the pager renders empty spans. Guards the DEBUG-only bug the default (rebuild
     # off) pager test above cannot see.
     settings.MDJANGO_ALWAYS_REBUILD = True
-    body = client.get("/docs/getting-started/quickstart/").content.decode()
+    body = client.get("/getting-started/quickstart/").content.decode()
     assert "docs-pager-link next" in body  # a real link, not an empty <span>
     assert "Preparing a server" in body
 
 
 def test_toc_shown_when_headings_exist(client):
-    assert "docs-toc--rail" in client.get("/docs/getting-started/quickstart/").content.decode()
+    assert "docs-toc--rail" in client.get("/getting-started/quickstart/").content.decode()
 
 
 def test_no_toc_when_page_has_no_headings(client):
     # secrets is a single H1 + prose, no H2/H3 -> no empty TOC rail is rendered at all
-    body = client.get("/docs/guides/secrets/").content.decode()
+    body = client.get("/guides/secrets/").content.decode()
     assert "docs-toc--rail" not in body
     assert "On this page" not in body
 
@@ -187,66 +187,62 @@ def test_the_shell_drops_the_rail_column_when_there_is_no_toc(client):
     """Without a rail its column goes, so the prose is not held off a tight window by a phantom
     gutter. Sprawl is prevented by the measure cap on ``.article`` instead — a cap leaves the
     space available while bounding the line length (see ``test_theme.py``)."""
-    with_toc = client.get("/docs/getting-started/quickstart/").content.decode()
-    without = client.get("/docs/guides/secrets/").content.decode()
+    with_toc = client.get("/getting-started/quickstart/").content.decode()
+    without = client.get("/guides/secrets/").content.decode()
     assert 'class="docs-shell"' in with_toc and "docs-shell--no-toc" not in with_toc
     assert "docs-shell--no-toc" in without
 
 
 def test_unknown_page_404s(client):
-    assert client.get("/docs/nope/").status_code == 404
+    assert client.get("/nope/").status_code == 404
 
 
 # --- LLM artifacts ---------------------------------------------------------------------------
 
 
 def test_llms_txt_lists_pages_linking_to_markdown(client):
-    r = client.get("/docs/llms.txt")
+    r = client.get("/llms.txt")
     assert r.status_code == 200
     assert r["Content-Type"] == "text/markdown; charset=utf-8"
     body = r.content.decode()
     assert body.startswith("# Fixture Docs")
-    assert "](/docs/getting-started/quickstart.md)" in body
+    assert "](/getting-started/quickstart.md)" in body
 
 
 def test_llms_full_concatenates_page_bodies(client):
-    body = client.get("/docs/llms-full.txt").content.decode()
+    body = client.get("/llms-full.txt").content.decode()
     assert "podman volume" in body  # from guides/databases-and-volumes
 
 
 def test_page_markdown_serves_the_raw_body(client):
-    r = client.get("/docs/getting-started/quickstart.md")
+    r = client.get("/getting-started/quickstart.md")
     assert r.status_code == 200
     assert r["Content-Type"] == "text/markdown; charset=utf-8"
     assert r.content.decode().startswith("# Quickstart")
 
 
 def test_index_markdown_serves_the_landing_page(client):
-    r = client.get("/docs/index.md")
+    r = client.get("/index.md")
     assert r.status_code == 200
     assert r.content.decode().lstrip().startswith("#")
 
 
 def test_page_head_links_to_its_markdown_alternate(client):
-    body = client.get("/docs/getting-started/quickstart/").content.decode()
+    body = client.get("/getting-started/quickstart/").content.decode()
     assert (
-        '<link rel="alternate" type="text/markdown" '
-        'href="/docs/getting-started/quickstart.md"' in body
+        '<link rel="alternate" type="text/markdown" href="/getting-started/quickstart.md"' in body
     )
 
 
 def test_unknown_markdown_404s(client):
-    assert client.get("/docs/nope.md").status_code == 404
+    assert client.get("/nope.md").status_code == 404
 
 
 def test_header_links_to_the_llm_artifacts(client):
-    body = client.get("/docs/").content.decode()
+    body = client.get("/").content.decode()
+    assert '<a href="/llms.txt" class="docs-header-link docs-header-link--llm">llms.txt</a>' in body
     assert (
-        '<a href="/docs/llms.txt" class="docs-header-link docs-header-link--llm">llms.txt</a>'
-        in body
-    )
-    assert (
-        '<a href="/docs/llms-full.txt" class="docs-header-link docs-header-link--llm">'
+        '<a href="/llms-full.txt" class="docs-header-link docs-header-link--llm">'
         "llms-full.txt</a>" in body
     )
     # sits between the version and the github link
@@ -258,36 +254,36 @@ def test_header_links_to_the_llm_artifacts(client):
 def test_sidebar_carries_the_llm_links_for_the_mobile_drawer(client):
     # A second copy of the links lives in the drawer group; CSS shows it only at <=767px, where the
     # header hides them. Server-side it is always rendered — the visibility swap is pure CSS.
-    sidebar = _sidebar(client.get("/docs/").content.decode())
+    sidebar = _sidebar(client.get("/").content.decode())
     assert 'class="docs-nav-group docs-nav-group--llm"' in sidebar
-    assert 'href="/docs/llms.txt" class="docs-nav-link">llms.txt</a>' in sidebar
-    assert 'href="/docs/llms-full.txt" class="docs-nav-link">llms-full.txt</a>' in sidebar
+    assert 'href="/llms.txt" class="docs-nav-link">llms.txt</a>' in sidebar
+    assert 'href="/llms-full.txt" class="docs-nav-link">llms-full.txt</a>' in sidebar
 
 
 def test_llm_docs_toggle_off_darkens_the_whole_surface(client, settings):
     settings.MDJANGO_LLM_DOCS = False
 
     # every markdown/llm route 404s
-    assert client.get("/docs/llms.txt").status_code == 404
-    assert client.get("/docs/llms-full.txt").status_code == 404
-    assert client.get("/docs/getting-started/quickstart.md").status_code == 404
-    assert client.get("/docs/index.md").status_code == 404
+    assert client.get("/llms.txt").status_code == 404
+    assert client.get("/llms-full.txt").status_code == 404
+    assert client.get("/getting-started/quickstart.md").status_code == 404
+    assert client.get("/index.md").status_code == 404
 
     # the header links, the drawer group, and the <head> alternate are all gone
-    body = client.get("/docs/").content.decode()
+    body = client.get("/").content.decode()
     assert "docs-header-link--llm" not in body
     assert "docs-nav-group--llm" not in body
     assert 'rel="alternate" type="text/markdown"' not in body
 
     # search is untouched — it is not part of the llm-docs surface
-    assert client.get("/docs/search-index.json").status_code == 200
+    assert client.get("/search-index.json").status_code == 200
 
 
 # --- shell override (ADR 0003 §3) ------------------------------------------------------------
 
 
 def test_a_consumer_shadows_a_shell_component_from_its_templates_dir(client, settings, tmp_path):
-    """The escape hatch: a ``cotton/docs/<component>.html`` in the consumer's ``TEMPLATES[DIRS]``
+    """The escape hatch: a ``cotton/<component>.html`` in the consumer's ``TEMPLATES[DIRS]``
     replaces mdjango's. Cotton's loader chain (cotton -> filesystem -> app_directories) is what
     makes DIRS win; this pins that, since the docs teach it as the override mechanism."""
     (tmp_path / "cotton" / "docs").mkdir(parents=True)
@@ -298,7 +294,7 @@ def test_a_consumer_shadows_a_shell_component_from_its_templates_dir(client, set
     templates[0]["DIRS"] = [str(tmp_path)]
     settings.TEMPLATES = templates
 
-    body = client.get("/docs/getting-started/quickstart/").content.decode()
+    body = client.get("/getting-started/quickstart/").content.decode()
     assert "SHADOWED fixture" in body
     assert "docs-search-trigger" not in body  # the shipped header is gone, not appended to
 
@@ -309,7 +305,7 @@ def test_a_consumer_shadows_a_shell_component_from_its_templates_dir(client, set
 def test_no_cache_headers_when_disabled(client, settings):
     # MDJANGO_CACHE_SECONDS=0 turns caching off; the ETag is still present (enables 304s).
     settings.MDJANGO_CACHE_SECONDS = 0
-    r = client.get("/docs/getting-started/quickstart/")
+    r = client.get("/getting-started/quickstart/")
     assert r["Cache-Control"] == "no-cache"
     assert r["ETag"]
 
@@ -317,20 +313,20 @@ def test_no_cache_headers_when_disabled(client, settings):
 def test_no_cache_while_rebuilding(client, settings):
     # DEBUG / always_rebuild (dev) never serves stale bytes: no server cache, no browser caching.
     settings.MDJANGO_ALWAYS_REBUILD = True
-    r = client.get("/docs/getting-started/quickstart/")
+    r = client.get("/getting-started/quickstart/")
     assert r["Cache-Control"] == "no-cache"
 
 
 def test_a_matching_conditional_request_gets_a_304(client):
-    etag = client.get("/docs/getting-started/quickstart/")["ETag"]
-    r = client.get("/docs/getting-started/quickstart/", HTTP_IF_NONE_MATCH=etag)
+    etag = client.get("/getting-started/quickstart/")["ETag"]
+    r = client.get("/getting-started/quickstart/", HTTP_IF_NONE_MATCH=etag)
     assert r.status_code == 304
 
 
 def test_public_cache_headers_when_enabled(client, settings):
     settings.MDJANGO_ALWAYS_REBUILD = False
     settings.MDJANGO_CACHE_SECONDS = 120
-    r = client.get("/docs/guides/secrets/")
+    r = client.get("/guides/secrets/")
     assert r["Cache-Control"] == "public, max-age=120"
 
 
@@ -339,7 +335,7 @@ def test_server_cache_skips_rerender_on_the_second_hit(client, settings):
 
     settings.MDJANGO_ALWAYS_REBUILD = False
     settings.MDJANGO_CACHE_SECONDS = 300
-    client.get("/docs/guides/secrets/")  # populate the cache
+    client.get("/guides/secrets/")  # populate the cache
     with mock.patch.object(rs.Renderer, "render") as render:
-        client.get("/docs/guides/secrets/")
+        client.get("/guides/secrets/")
     assert render.call_count == 0  # served from the cached HTML string, no re-render
