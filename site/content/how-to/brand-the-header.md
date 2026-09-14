@@ -1,15 +1,15 @@
 ---
 title: Brand the header
 weight: 30
-description: Set the wordmark, title, version chip and links from settings, or replace the header component to add a logo.
+description: Set the wordmark, title, version chip and header links from settings.
 ---
 
 # Brand the header
 
-**Goal:** make the header say your project's name, link to your places, and carry your logo.
+**Goal:** make the header say your project's name and link to your places.
 
-**You need:** write access to the project's `settings.py`. For the logo, a directory listed in
-`TEMPLATES[0]["DIRS"]`. Defaults for every setting are in the [settings reference](../../reference/settings/).
+**You need:** write access to the project's `settings.py`. Defaults for every setting are in the
+[settings reference](../../reference/settings/).
 
 ## Set the text and links
 
@@ -36,44 +36,11 @@ into a drawer.
 
 `MDJANGO_VERSION` is a display string. It does not select a version of the content.
 
-## Add a logo
+## What is not configurable
 
-There is no logo setting. The wordmark is text. To show an image, shadow the header component.
-
-Create `templates/cotton/docs/header.html` in a directory listed in `TEMPLATES[0]["DIRS"]`:
-
-```django
-{% load static %}
-<header class="docs-header">
-  <div class="docs-header-inner">
-    <button class="docs-hamburger" type="button" data-action="disclosure#toggle" aria-label="Open navigation">≡</button>
-    <a href="{{ conf.home_url }}" class="docs-wordmark">
-      <img src="{% static 'acme/logo.svg' %}" alt="{{ conf.brand }}" height="20">
-    </a>
-    <c-docs.breadcrumb :items="breadcrumb" />
-    <div class="docs-header-spacer"></div>
-    <button class="docs-search-trigger" type="button" data-action="search#open">
-      <span class="k">/</span>
-      <span class="label">search docs</span>
-      <span class="kbd">⌘K</span>
-    </button>
-    {% if conf.version %}<span class="docs-version">{{ conf.version }}</span>{% endif %}
-    {% if conf.llm_docs %}<a href="{% url 'mdjango:llms_txt' %}" class="docs-header-link docs-header-link--llm">llms.txt</a><a href="{% url 'mdjango:llms_full' %}" class="docs-header-link docs-header-link--llm">llms-full.txt</a>{% endif %}
-    {% for l in conf.header_links %}<a href="{{ l.url }}" class="docs-header-link">{{ l.label }}</a>{% endfor %}
-    {% if conf.github_url %}<a href="{{ conf.github_url }}" class="docs-header-link">github</a>{% endif %}
-    <button class="docs-theme-toggle" type="button" data-action="theme#toggle" aria-label="Toggle dark mode">◐</button>
-  </div>
-</header>
-```
-
-This is the shipped header with one change: the wordmark wraps an image. The component receives
-`conf` and `breadcrumb` as attributes. The `data-action` attributes wire the buttons to the shipped
-Stimulus controllers and the class names pick up the shipped styles. Drop either and you own that
-element.
-
-Your file is found before mdjango's because cotton's loader chain reads `TEMPLATES["DIRS"]` before
-app directories. [Replace part of the shell](../replace-the-shell/) covers the mechanism and what
-else can be shadowed.
+The wordmark is text. There is no logo setting, and the header's layout, order and labels are part
+of the House style. The colours and typeface it uses come from the seeds in
+[Change the colours and type](../change-colours-and-type/).
 
 ## Check the result
 

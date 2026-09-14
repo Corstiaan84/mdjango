@@ -7,8 +7,8 @@ description: One Theme, seven knobs, no build step. The reasoning behind mdjango
 # Why the house style is fixed
 
 mdjango ships exactly one Theme. You can change its colours, its typeface and its size. You cannot
-change its layout or its personality without copying templates. This is deliberate, and this page
-lays out the trade.
+change its layout, its chrome or its personality. This is deliberate, and this page lays out the
+trade.
 
 ## The drop-in promise
 
@@ -34,19 +34,20 @@ to seven as a result.
 
 Those seven names are a public API. Renaming or dropping one is a breaking change and is versioned
 as one. The markup of the templates, their class names and their context keys are not part of that
-promise. When you shadow a component you own a copy, and the copy can fall behind.
+promise, and mdjango may change them in any release.
 
-## The shell is included, and overridable by copy
+## The shell is included, not extended
 
 mdjango renders the whole page from your settings: header, navigation, article, table of contents,
-prev/next. Most projects want exactly that. The escape hatch for the rest is template shadowing:
-replace one cotton component, or the base document, or the page template. Nothing in the package
-uses `{% block %}`, because a block contract would freeze the markup. Shadowing a whole component
-lets mdjango evolve its own templates while a project that wants different chrome owns a copy.
+prev/next. That is the product. There is no `{% block %}` to fill, no slot for extra chrome, no
+plugin point for a footer or a logo. A block contract would freeze the markup into a public API and
+take away the freedom to improve the Shell; a partial extension point would produce sites that are
+half House style and half something else. A project that needs different chrome has outgrown
+mdjango and should fork it.
 
-The seam is coarse on purpose, and it has a cost you will meet early: there is no slot for one extra
-stylesheet. Adding one means copying the base document. That is the price of not freezing the
-document's markup into a contract.
+The one gap you will meet early is that there is no setting for loading a second stylesheet, which
+the seeds need. [Change the colours and type](../../how-to/change-colours-and-type/) shows the
+current workaround.
 
 ## No build step, no CDN
 
@@ -55,14 +56,13 @@ MiniSearch, six `woff2` faces of the default font. A reusable app cannot assume 
 Node, a bundler, network access at page load, or a permissive content-security policy. A font that
 only sometimes arrives is not a House style.
 
-For the same reason there are no utility classes. A stylesheet compiled in mdjango's repository
-cannot contain utilities for markup you write in a shadowed template. The package ships tokens and
-semantic classes, both of which your own toolchain can build on.
+For the same reason there are no utility classes. The package ships tokens and semantic classes,
+and a Consumer's own pages can reuse the font through `fonts.css`.
 
 ## What you give up
 
-- A different layout, a card-based or bordered restyle, an independent border hue: not reachable
-  through the seeds. Copy the templates and write your own stylesheet.
+- A different layout, a card-based or bordered restyle, an independent border hue, a logo in the
+  header: not reachable. mdjango is the wrong tool if you need them.
 - A proportional body face is reachable through `--font`. Code stays monospace.
 - A configurable navigation depth: rejected, because it would let a project configure its way into
   a sidebar the Shell cannot render legibly. See [Why three levels](../why-three-levels/).

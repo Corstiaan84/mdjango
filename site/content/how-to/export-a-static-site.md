@@ -59,9 +59,9 @@ site only, or point `DJANGO_SETTINGS_MODULE` at a settings module that omits it 
 
 ## Add your own static files
 
-Only mdjango's own static tree is copied. A stylesheet you load from a shadowed base component, a
-logo in a shadowed header, or an image linked from a page is referenced by the HTML but not
-written. Copy those into `dist/static/` after the build:
+Only mdjango's own static tree is copied. A stylesheet you load after mdjango's, or an image linked
+from a page, is referenced by the HTML but not written. Copy those into `dist/static/` after the
+build:
 
 ```bash
 python manage.py mdjango_build

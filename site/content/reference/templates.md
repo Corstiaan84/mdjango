@@ -7,10 +7,9 @@ description: The page template, the nine cotton components it composes, the cont
 # Templates
 
 mdjango renders every HTML response through one template, `mdjango/page.html`, which composes
-cotton components from `cotton/docs/`. There are no `{% block %}` tags and no `{% extends %}`.
-Customisation is by shadowing a file at the same path in a directory listed in `TEMPLATES["DIRS"]`
-([Replace part of the shell](../../how-to/replace-the-shell/)). There are no template tags or
-context processors.
+cotton components from `cotton/docs/`. There are no `{% block %}` tags, no `{% extends %}`, no
+template tags and no context processors. The templates are not a customisation surface. What a
+Consumer may change is listed in [settings](../settings/) and [theme tokens](../theme-tokens/).
 
 ## Page context
 
@@ -35,8 +34,7 @@ context processors.
 `mdjango/templates/mdjango/page.html` wraps everything in `<c-docs.base>`, then renders the header,
 the drawer backdrop, a `.docs-shell` grid holding the sidebar, `<main>` (inline TOC, eyebrow,
 article, pager) and the TOC rail, then the search dialog. When `toc` is empty both TOC instances
-are omitted and the shell gets the `docs-shell--no-toc` class, which drops the rail column. Copy
-the file from the installed package when you shadow it.
+are omitted and the shell gets the `docs-shell--no-toc` class, which drops the rail column.
 
 ## Components
 
@@ -54,10 +52,6 @@ template. "Outer context" is read from the page context without being passed.
 | `pager.html` | `<nav class="docs-pager">` with prev/next links; an empty placeholder where a neighbour is absent | `prev`, `next`, `prev_url`, `next_url` | — |
 | `breadcrumb.html` | `<nav class="docs-breadcrumb">`; crumbs are `<span>`s, never links | `items` | — |
 | `search.html` | the search dialog, `data-search-index-url="{% url 'mdjango:search_index' %}"` | — | — |
-
-`base.html` declares only `page_md_url` in its `<c-vars>`. `title` is bound from the attribute the
-page template passes, so a shadowed page template that omits it renders an empty `<title>` without
-an error.
 
 ## Stimulus controllers
 

@@ -13,10 +13,8 @@ serves. The token names and shipped defaults are in the [theme tokens reference]
 
 ## 1. Load a stylesheet after mdjango's
 
-mdjango's base component loads one stylesheet and offers no setting or slot for a second. Shadow
-the component to add one.
-
-Copy the shipped `mdjango/templates/cotton/docs/base.html` from your installed package to
+mdjango's base document loads one stylesheet and has no setting for a second. Until it does, copy
+the shipped `mdjango/templates/cotton/docs/base.html` from your installed package to
 `templates/cotton/docs/base.html` in a directory listed in `TEMPLATES[0]["DIRS"]`, and add one line
 after the existing stylesheet link:
 
@@ -25,8 +23,9 @@ after the existing stylesheet link:
 <link rel="stylesheet" href="{% static 'acme/docs-theme.css' %}">
 ```
 
-Change nothing else in the copy. Everything else in that file is load-bearing; the list of what it
-must keep is in [Replace part of the shell](../replace-the-shell/).
+Change nothing else in the copy. Every other line in that file is load-bearing for dark mode, search
+and the drawer. Your copy is found first because django-cotton reads `TEMPLATES["DIRS"]` before app
+directories. When you upgrade mdjango, diff your copy against the shipped file.
 
 ## 2. Set the seeds
 

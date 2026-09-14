@@ -24,7 +24,7 @@ python manage.py collectstatic --noinput
 ```
 
 Nothing is fetched from a CDN. If your CSP blocks inline scripts, allow the short inline theme
-script in `<head>`, or shadow the base component and move it to a file.
+script in `<head>`; without it dark mode flashes on load.
 
 ## Know what DEBUG turns off
 

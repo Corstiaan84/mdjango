@@ -61,5 +61,5 @@ first request, as a 500 in a running site or as an error from `mdjango_build`.
   needed to serve the Shell's assets. Order between the two apps does not matter.
 - `STATIC_URL` is used by `mdjango_build` as the prefix of the exported static directory.
 - There is no setting for the maximum tree depth (fixed at three), for disabling search, for the
-  markdown extensions, for a canonical URL, or for adding a stylesheet. See
-  [Replace part of the shell](../../how-to/replace-the-shell/).
+  markdown extensions, for a canonical URL, for a logo, or for adding a stylesheet. See
+  [Change the colours and type](../../how-to/change-colours-and-type/) for the stylesheet.
