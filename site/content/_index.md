@@ -1,19 +1,25 @@
 ---
-title: mdjango
+title: Welcome
 description: A drop-in Django app that renders a tree of markdown into a documentation site.
 ---
 
 # mdjango
 
-mdjango is a Django app you add to a project that already does other things. You install it, point
+mdjango is a Django app that allows you to quickly setup a decent technical documentation site. You install it, point
 it at a directory of markdown files, the **Content tree**, and include its URLs under a prefix. Your
 running Django process then serves a documentation site at that prefix: header, section navigation,
 article, table of contents, prev/next links, full-text search, dark mode, and the `llms.txt` family
 of machine-readable artifacts. The docs sit behind the same middleware, authentication and
-deployment as the rest of the project.
+deployment as the rest of the project. You can use it stand-alone or as part of a larger Django app.
+There's also an option to generate the docs as a static site that you can host as plain html files
+outside the Django process.
 
 There is one fixed **House style**. You set the ends of two colour Ramps, an accent, a font and a
-base size. The layout and the rest of the palette are derived and locked.
+base size. The layout and the rest of the palette are derived and locked. This is by design.
+mdjango is meant to be a drop-in app that you can setup in 30 mins. Not something you should be
+tweaking and customizing endlessly. If you need more customizing, you're better of building your
+own docs feature in your current Django app, or using another off-the-shelf tool that allows for
+more customization.
 
 This site is mdjango documenting itself: a Django project that mounts mdjango with no overrides, so
 what you are looking at is the default. Every page has a `.md` alternate, linked from the header.
