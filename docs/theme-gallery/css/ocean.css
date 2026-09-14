@@ -1,4 +1,4 @@
-/* Ocean — cool blue, blue accent */
+/* Ocean — cool blue, blue accent, IBM Plex Sans (pairs with the house Plex Mono) */
 :root {
   --background: #f4f7fb;
   --border: #d6e0ec;
@@ -6,7 +6,7 @@
   --foreground-subtle: #6b7d93;
   --accent: #2563eb;
   /* humanist sans; code stays mono via --code-font */
-  --font: "Noto Sans", system-ui, sans-serif;
+  --font: "IBM Plex Sans", system-ui, sans-serif;
 }
 :root[data-theme="dark"] {
   --background: #0e1620;

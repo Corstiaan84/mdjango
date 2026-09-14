@@ -15,24 +15,39 @@ visual regression eye-check for the seed contract. **Dev-only:** this tree is ou
 - `screenshots/` — each theme light + dark on the `reference/theme-tokens` page (retina, 2×), plus
   two contact sheets (`palettes-contact-sheet.png`, `brands-contact-sheet.png`).
 
-The `--font`s are **system stacks**, not vendored web fonts — mdjango ships only IBM Plex Mono and
-forbids CDN fetches (ADR 0003), so a named web font would silently fall back. The committed
-screenshots were rendered on Linux, which has none of the real brand faces, so each stack names an
-installed family as a fallback to stay visibly distinct here rather than collapsing to one default.
-The **rendered** face below was verified with `CSS.getPlatformFontsForNode` — all six differ:
+Each `--font` names a real, recognisable OFL (open-source) typeface. The **rendered** face — body
+*and* heading — was verified with `CSS.getPlatformFontsForNode`, so these are what the screenshots
+actually show, not what the CSS merely asks for:
 
-| Theme | Accent | Intended face | Rendered here (Linux) | Genre |
-|---|---|---|---|---|
-| `ocean` | blue | (system sans) | Noto Sans | humanist sans |
-| `claret` | crimson | (system serif) | Noto Serif | serif |
-| `forest` | green | (system serif) | Liberation Serif | old-style serif (Times) |
-| `apple` | blue | SF Pro Text | Adwaita Sans | Inter-like sans |
-| `tesla` | red | Helvetica Neue | Liberation Sans | Helvetica sans |
-| `stripe` | indigo | Segoe UI / Sohne | Cantarell | geometric sans |
+| Theme | Accent | Font (`--font`) | Genre |
+|---|---|---|---|
+| `ocean` | blue | IBM Plex Sans | humanist sans (pairs with the house Plex Mono) |
+| `claret` | crimson | Playfair Display | high-contrast didone serif |
+| `forest` | green | Roboto Slab | slab serif |
+| `apple` | blue | Inter | neutral geometric-humanist sans (SF-like) |
+| `tesla` | red | Montserrat | geometric sans (Gotham-like) |
+| `stripe` | indigo | Space Grotesk | grotesque sans |
 
-A viewer who has the intended face sees that instead; the fallbacks only make the *demo* legible.
-With only these families installed the split is 4 sans + 2 serif, so `claret` and `forest` share the
-serif genre (different families — a modern serif vs Times); every other pair differs in genre too.
+`--code-font` is not a seed, so code blocks stay IBM Plex Mono in every theme.
+
+### Reproducing the screenshots
+
+These faces are **not vendored** — mdjango ships only IBM Plex Mono and forbids CDN fetches
+(ADR 0003), and this gallery is a demo, not shipped. To reproduce the screenshots you need the six
+families installed on the render machine; without them each `--font` falls back to a generic
+`sans-serif`/`serif`. They were installed here from the OFL sources in
+[`google/fonts`](https://github.com/google/fonts):
+
+```bash
+# variable TTFs into a user font dir, then refresh the cache
+mkdir -p ~/.local/share/fonts/gallery && cd ~/.local/share/fonts/gallery
+# Inter, IBM Plex Sans, Playfair Display, Roboto Slab: variable defaults render at 400 as-is.
+# Montserrat and Space Grotesk default to a Thin/Light instance and Chromium does not interpolate
+# a locally-installed variable font's weight, so their static 400/700 were instanced instead:
+#   python -m fontTools.varLib.instancer 'Montserrat[wght].ttf' wght=400 -o Montserrat-Regular.ttf --update-name-table
+#   python -m fontTools.varLib.instancer 'Montserrat[wght].ttf' wght=700 -o Montserrat-Bold.ttf    --update-name-table
+fc-cache -f ~/.local/share/fonts
+```
 
 ## How they were generated
 

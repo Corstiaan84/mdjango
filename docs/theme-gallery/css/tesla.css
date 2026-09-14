@@ -1,12 +1,12 @@
-/* Tesla — crisp white/graphite, red accent, Helvetica-style sans (aesthetic homage) */
+/* Tesla — crisp white/graphite, red accent, Montserrat (Gotham-style geometric sans) */
 :root {
   --background: #ffffff;
   --border: #e3e3e3;
   --foreground: #171a20;
   --foreground-subtle: #5c5e62;
   --accent: #e82127;
-  /* Helvetica/Arial metrics; code stays mono via --code-font */
-  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* geometric sans; code stays mono via --code-font */
+  --font: "Montserrat", "Gotham", "Helvetica Neue", Arial, sans-serif;
 }
 :root[data-theme="dark"] {
   --background: #0f1114;

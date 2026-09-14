@@ -1,4 +1,4 @@
-/* Claret — warm rose, crimson accent */
+/* Claret — warm rose, crimson accent, Playfair Display (high-contrast didone serif) */
 :root {
   --background: #fdf6f5;
   --border: #f0d9d6;
@@ -6,7 +6,7 @@
   --foreground-subtle: #9a7b7d;
   --accent: #c02b4e;
   /* editorial serif; code stays mono via --code-font */
-  --font: "Noto Serif", Georgia, serif;
+  --font: "Playfair Display", Georgia, serif;
 }
 :root[data-theme="dark"] {
   --background: #1e1416;
