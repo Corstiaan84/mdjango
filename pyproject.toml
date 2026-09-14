@@ -1,6 +1,6 @@
 [project]
 name = "django-mdjango"
-version = "0.1.0.dev0"
+dynamic = ["version"]
 description = "A reusable, drop-in markdown-documentation Django app: point it at a tree of markdown and get a themed docs site, served at runtime or exported static."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,8 +22,16 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+# The git tag is the version (hatch-vcs). A `vX.Y.Z` tag → version `X.Y.Z`; the version-file is
+# generated into the wheel at build time and read by mdjango/__init__.py at runtime.
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "mdjango/_version.py"
 
 # hatchling ships everything under the `mdjango/` package — templates, the compiled stylesheet,
 # and the vendored JS in `static/`. The theme *source* (`theme/src/`, the build script) and the

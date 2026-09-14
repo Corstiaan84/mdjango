@@ -1,0 +1,12 @@
+# Keep the build context lean. NOTE: .git is intentionally NOT ignored — the builder stage needs
+# git history for hatch-vcs to derive the version.
+.venv/
+**/__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+staticfiles/
+site/staticfiles/
+dist/
+*.egg-info/
+db.sqlite3
