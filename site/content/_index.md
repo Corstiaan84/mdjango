@@ -5,47 +5,33 @@ description: A drop-in Django app that renders a tree of markdown into a documen
 
 # mdjango
 
-mdjango is a reusable Django app. You install it into a Django project, point it at a directory of
-markdown files — the **Content tree** — and include its URLs. It renders that tree as a complete
-documentation site: header, section navigation, article, table of contents, prev/next, full-text
-search, dark mode, and the `llms.txt` family of machine-readable artifacts. The same tree can be
-served by your running Django process or exported as a static directory.
+mdjango is a Django app you add to a project that already does other things. You install it, point
+it at a directory of markdown files, the **Content tree**, and include its URLs under a prefix. Your
+running Django process then serves a documentation site at that prefix: header, section navigation,
+article, table of contents, prev/next links, full-text search, dark mode, and the `llms.txt` family
+of machine-readable artifacts. The docs sit behind the same middleware, authentication and
+deployment as the rest of the project.
 
-There is one fixed house style. You set a handful of colours, a font and a base size; the layout
-and the rest of the palette are derived and locked.
+There is one fixed **House style**. You set the ends of two colour Ramps, an accent, a font and a
+base size. The layout and the rest of the palette are derived and locked.
 
 This site is mdjango documenting itself: a Django project that mounts mdjango with no overrides, so
-what you are looking at is the default. Every page here has a `.md` alternate — follow the
-`llms.txt` link in the header.
+what you are looking at is the default. Every page has a `.md` alternate, linked from the header.
 
-## Start here
+## Read in this order
 
-- [Install and mount](getting-started/install-and-mount/) — from `pip install` to a rendered page
-  in one sitting.
+1. [Install and mount](getting-started/install-and-mount/) takes an existing project to a rendered
+   page.
+2. [Write a page](how-to/write-a-page/) and [Structure a content tree](how-to/structure-a-content-tree/)
+   cover authoring.
+3. [Brand the header](how-to/brand-the-header/) and [Change the colours and type](how-to/change-colours-and-type/)
+   make it yours.
+4. [Run in production](how-to/run-in-production/) before you deploy. Caching and draft visibility
+   change when `DEBUG` is off.
 
-## Do a task
+The [reference](reference/settings/) section lists every setting, route, front-matter key and CSS
+token. The [explanation](explanation/the-filesystem-is-the-source-of-truth/) section covers the
+design choices you will meet when operating it.
 
-- [Structure a content tree](how-to/structure-a-content-tree/) — sections, subsections, ordering,
-  the landing page, drafts.
-- [Write a page](how-to/write-a-page/) — frontmatter, headings, code, tables, links between pages.
-- [Brand the header](how-to/brand-the-header/) — wordmark, version, links.
-- [Change the colours and type](how-to/change-colours-and-type/) — the seven CSS seeds.
-- [Replace part of the shell](how-to/replace-the-shell/) — shadow a template.
-- [Tune caching](how-to/tune-caching/) — one setting, and when to turn it off.
-- [Export a static site](how-to/export-a-static-site/) — `mdjango_build`.
-- [Publish the LLM artifacts](how-to/publish-llm-artifacts/) — `llms.txt`, `llms-full.txt`, per-page
-  markdown.
-- [Run in production](how-to/run-in-production/) — what changes when `DEBUG` is off.
-
-## Look something up
-
-- [Settings](reference/settings/) · [Content tree rules](reference/content-tree/) ·
-  [URLs](reference/urls/) · [`mdjango_build`](reference/mdjango-build/) ·
-  [Theme tokens](reference/theme-tokens/) · [Templates](reference/templates/) ·
-  [Markdown](reference/markdown/)
-
-## Understand the design
-
-- [The filesystem is the source of truth](explanation/the-filesystem-is-the-source-of-truth/)
-- [Why the house style is fixed](explanation/why-the-house-style-is-fixed/)
-- [Why three levels](explanation/why-three-levels/)
+If all you need is the docs and nothing else from Django, [Export a static site](how-to/export-a-static-site/)
+writes the same site to a directory.

@@ -1,57 +1,55 @@
 ---
 title: Write a page
-weight: 20
-description: Front-matter, headings that feed the table of contents, code blocks, tables, and links between pages.
+weight: 10
+description: Front-matter, headings the table of contents picks up, tagged code fences, and relative links that resolve.
 ---
 
 # Write a page
 
-**Goal:** write one markdown file that renders well in the shell and links correctly to its
-neighbours.
+**Goal:** add one markdown file that renders with the right title, a table of contents, highlighted
+code and working links.
 
-**You need:** a [content tree](../structure-a-content-tree/) to put it in. The full list of enabled
-markdown extensions is in the [markdown reference](../../reference/markdown/).
+**You need:** a Content tree that already serves. The full key list and parser rules are in the
+[content tree reference](../../reference/content-tree/); the extension list is in the
+[markdown reference](../../reference/markdown/).
 
-## Start with front-matter
+## Start with front-matter and an H1
 
-```markdown
+````markdown
 ---
 title: Roll back a deploy
 weight: 30
-description: Return an app to its previous build with one command.
+description: Return a host to the previous release.
 ---
 
 # Roll back a deploy
-```
+````
 
-Four keys are read; anything else is ignored silently:
+Front-matter is a block of `key: value` lines between two lines that are exactly `---`. It is not
+YAML: no lists, no nesting, no multi-line values. Four keys are read.
 
 | Key | Effect |
 |---|---|
-| `title` | Nav label, `<title>`, breadcrumb. Falls back to the first `#` heading, then the humanised filename. |
-| `weight` | Position among siblings (lower first; default `100`). |
-| `draft` | `true` hides the page outside development. |
-| `description` | One line, appended to the page's entry in `llms.txt`. |
+| `title` | navigation label and `<title>`. Falls back to the first `#` heading, then the filename. |
+| `weight` | position among siblings, lowest first. Default `100`. |
+| `draft` | `true` hides the page unless drafts are included. |
+| `description` | the suffix of the page's `llms.txt` entry. |
 
-The block is parsed as flat `key: value` lines, not YAML: no lists, no nesting, no multi-line
-values. Surrounding quotes are stripped. Keys are lower-cased.
+Put an H1 in the body too. The article title is the body's `#` heading, and the `.md` alternate of a
+page without one gets a synthesised heading.
 
-Open the body with a `#` heading that repeats the title. The rendered page shows it as the
-article's heading, and the `.md` alternate is served as-is when the body already starts with one.
-
-## Structure with H2 and H3
-
-The "On this page" table of contents collects `##` and `###` headings only. `####` headings render
-and get a permalink but do not appear in the rail.
+## Use H2 and H3 for the table of contents
 
 ```markdown
-## Prepare the host
-### Open the firewall
-## Run the rollback
+## Stop traffic
+
+### Drain the pool
+
+## Restore the previous build
 ```
 
-Every heading from `##` to `####` gets an `id` and a `#` permalink; the scroll-spy highlights the
-current section as the reader moves.
+The "On this page" rail lists H2 and H3 headings only. H4 gets an anchor and a permalink but is not
+listed. Every heading from H2 to H4 gets a `#` permalink.
 
 ## Tag every code fence
 
@@ -61,43 +59,54 @@ acme rollback web
 ```
 ````
 
-Untagged fences render as plain preformatted text — the highlighter does not guess a language.
-Every fence gets a copy button. Fences inside lists or blockquotes work (`superfences`).
+Untagged fences render as plain preformatted text. The highlighter does not guess a language. Every
+fence gets a copy button.
 
-Inline code uses backticks as usual. `~~strikethrough~~` is enabled.
+To show a fence inside a fence, make the outer fence four backticks. A three-backtick outer fence is
+closed by the inner one and the rest of the example leaks out as headings and paragraphs.
 
-## Use tables and definition lists
+## Use a blockquote for a callout
 
 ```markdown
-| Flag | Meaning |
-|---|---|
-| `--keep` | Leave the old build on disk. |
-
-Term
-:   Definition indented four spaces.
+> Rolling back does not restore the database. See the restore guide.
 ```
+
+Admonitions (`!!! note`) are not enabled and render as a paragraph. Tables, definition lists,
+`~~strikethrough~~` and `~subscript~` are enabled.
 
 ## Link to another page
 
-Pages are **served one level deeper than they are stored**: `how-to/deploy.md` is served at
-`/docs/how-to/deploy/`. Relative links therefore start from the page's own URL directory, not its
-file's directory. Always end a link with the trailing slash.
+Pages are served one level deeper than they are stored: `how-to/deploy.md` is served at
+`/docs/how-to/deploy/`. Relative links start from the page's URL directory, not its file's
+directory. End every link with a trailing slash.
 
-| From a page in… | To a sibling in the same group | To a page in another Section |
+| From a page in… | To a sibling | To a page in another Section |
 |---|---|---|
 | a Section (`how-to/deploy.md`) | `](../rollback/)` | `](../../reference/cli/)` |
 | a Subsection (`how-to/hosts/harden.md`) | `](../provision/)` | `](../../../reference/cli/)` |
 | the root `_index.md` | — | `](how-to/deploy/)` |
 
-Writing `](../how-to/rollback/)` from `how-to/deploy.md` doubles the segment and 404s. There is no
-link rewriting and no redirect table: a moved page breaks every link that pointed at it until you
+Writing `](../how-to/rollback/)` from `how-to/deploy.md` doubles the segment and 404s. Nothing
+rewrites links and there is no redirect table. Moving a page breaks every link aimed at it until you
 update them.
 
-## What is not available
+## Reference images by URL
 
-- **Admonitions** (`!!! note`) are not enabled; they render as plain paragraphs. Use a blockquote.
-- **Images and other files** in the content directory are ignored. Only `.md` files are read, and
-  nothing is copied into the export. Serve images from your project's static files and link them by
-  URL.
-- **Raw HTML** is passed through untouched (the tree is trusted content), including inside
-  `<div markdown="1">` blocks.
+Only `.md` files in the Content tree are read. Images and other files placed beside a page are
+ignored and never served. Put them in your project's static files and link them by their served
+URL:
+
+```markdown
+![Deploy pipeline](/static/acme/pipeline.svg)
+```
+
+Markdown is not a Django template. `{% static %}` is not evaluated in a page.
+
+## Check the result
+
+```bash
+python manage.py mdjango_build --check
+```
+
+This renders every page without writing and exits non-zero on a broken tree. See
+[Validate content in CI](../validate-content-in-ci/).

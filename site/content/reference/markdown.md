@@ -28,21 +28,24 @@ Output is HTML5 (`output_format="html"`), tab length 4, one fresh parser per pag
 ## What the renderer adds
 
 - **Table of contents**: H2 and H3 headings only, in document order, as `TocItem(id, label, level)`.
-  H4 headings get an id and permalink but are not listed.
+  An H4 gets an id and a permalink but is not listed.
 - **Code fences**: each Pygments block is wrapped as `<div class="… highlight code-block"
   data-controller="clipboard">` with a `copy` button inserted as its first child. The button copies
   the block's text at click time. An untagged fence is not highlighted.
-- **Permalinks**: `<a class="headerlink" href="#id">#</a>` after each H2–H4, hidden on H1 by the
-  stylesheet. Anchored headings clear the sticky header (`scroll-margin-top`).
+- **Permalinks**: `<a class="headerlink" href="#id">#</a>` after each H2 to H4. Anchored headings
+  clear the sticky header.
 
 ## Not enabled
 
-- `admonition` / `pymdownx.blocks` — no callouts; `!!! note` renders as text.
-- `footnotes`, `abbr`, `pymdownx.tasklist`, `pymdownx.tabbed`, `pymdownx.emoji`, `pymdownx.arithmatex`.
+- `admonition` and `pymdownx.blocks`. `!!! note` renders as text. Use a blockquote.
+- `footnotes`, `abbr`, `pymdownx.tasklist`, `pymdownx.tabbed`, `pymdownx.emoji`,
+  `pymdownx.arithmatex`.
 - Mermaid or any diagram rendering.
-- HTML sanitisation. The Content tree is treated as trusted; raw HTML in a page is emitted as-is.
+- Link rewriting. Relative links are emitted as written.
+- HTML sanitisation. The Content tree is treated as trusted. Raw HTML in a page, including inside
+  `<div markdown="1">`, reaches the browser as written.
 
 ## Front-matter
 
-Stripped before rendering; see [content tree rules](../content-tree/). The body is what gets
-rendered, and also what the `.md` alternate and `llms-full.txt` publish.
+Stripped before rendering; see [content tree rules](../content-tree/). The body is what is rendered,
+and also what the `.md` alternate and `llms-full.txt` publish.

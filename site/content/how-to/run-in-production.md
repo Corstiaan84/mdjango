@@ -1,59 +1,105 @@
 ---
 title: Run in production
 weight: 90
-description: What changes when DEBUG is off — content read once, drafts hidden, caching on — and the two steps a deploy needs.
+description: Serve the shell's assets, set the cache, restrict the docs to signed-in users, and ship a content change.
 ---
 
 # Run in production
 
-**Goal:** deploy a Django project that mounts mdjango, knowing which behaviours flip with
-`DEBUG = False`.
+**Goal:** serve the docs from your deployed Django process, alongside everything else it does, with
+caching that matches who may read them.
 
-**You need:** a working production setup for the Django project itself — WSGI/ASGI server, static
-file serving. mdjango adds nothing to that stack and has no database tables.
+**You need:** a project that serves mdjango under `runserver`. Setting defaults are in the
+[settings reference](../../reference/settings/). The three cache layers are explained in
+[How caching works](../../explanation/how-caching-works/).
 
-## Collect the static files
+## Serve the static assets
 
-The shell loads its stylesheet, fonts, controllers and vendored JavaScript through `{% static %}`.
-Run `collectstatic` as for any app with static files:
+The Shell needs mdjango's stylesheet, fonts and controllers from your `STATIC_URL`. Django does not
+serve static files with `DEBUG = False`. Collect them and serve them the way you serve the rest of
+the project's static, for example with WhiteNoise:
 
 ```bash
 python manage.py collectstatic --noinput
 ```
 
-Everything ships inside the package under `static/mdjango/`; there is no build step and nothing is
-fetched from a CDN at runtime.
+Nothing is fetched from a CDN. If your CSP blocks inline scripts, allow the short inline theme
+script in `<head>`, or shadow the base component and move it to a file.
 
-## Validate the content before you start
+## Know what DEBUG turns off
 
-A malformed Content tree — a fourth directory level, two files resolving to the same URL, a missing
-content directory — raises on the first request that builds the registry, not at startup. Run the
-gate in CI or as a release step:
+Two settings default to `DEBUG`:
 
-```bash
-python manage.py mdjango_build --check
+| Setting | Under `DEBUG = True` | Under `DEBUG = False` |
+|---|---|---|
+| `MDJANGO_INCLUDE_DRAFTS` | drafts are served | drafts are hidden |
+| `MDJANGO_ALWAYS_REBUILD` | the tree is re-read on every request and nothing is cached | the tree is read once per process and pages are cached |
+
+Set either explicitly if you need the other behaviour in an environment.
+
+## Set the cache for public docs
+
+```python
+# settings.py
+MDJANGO_CACHE_SECONDS = 300   # the default
 ```
 
-## Know what DEBUG = False changes
+One setting drives two things: the rendered HTML is stored in Django's default cache for that many
+seconds, and every response carries `Cache-Control: public, max-age=300`. Browsers and any CDN in
+front of you may cache the page and serve it without touching Django. Every response also carries a
+strong `ETag`, and a matching `If-None-Match` gets a `304`.
 
-Three settings default to `DEBUG`, so turning it off flips them together:
+Raise the number for docs that change rarely behind a CDN. `0` turns the server-side cache off and
+sends `Cache-Control: no-cache` instead.
 
-| Setting | With `DEBUG = True` | With `DEBUG = False` |
-|---|---|---|
-| `MDJANGO_ALWAYS_REBUILD` | tree re-read on every request | tree read once per worker process |
-| `MDJANGO_INCLUDE_DRAFTS` | drafts visible | drafts hidden |
-| response caching | off, `Cache-Control: no-cache` | on, pages cached 300 s, `Cache-Control: public, max-age=300` |
+## Restrict the docs to signed-in users
 
-Set any of them explicitly to decouple it from `DEBUG` — see [Tune caching](../tune-caching/).
+mdjango's views are plain class-based views with no authentication of their own. They sit behind
+whatever middleware the project has. To require login, use Django's middleware and set the cache to
+zero:
 
-## Restart on content changes
+```python
+# settings.py
+MIDDLEWARE = [
+    # ...
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.LoginRequiredMiddleware",
+]
 
-With the tree read once per process, a content change is a deploy: restart the workers. There is no
-file watcher and no cache purge command. If you serve the docs from a checkout that is updated in
-place, restart after every pull.
+MDJANGO_CACHE_SECONDS = 0
+```
 
-## Prefer the export when you can
+The second line is not optional. `Cache-Control: public` tells a shared cache it may store the
+response and serve it to the next visitor, whoever they are. With the setting at `0` the header is
+`no-cache`. The `ETag` is still emitted, so a browser that already holds a page still gets `304`s.
 
-If nothing on the domain needs Django at request time, [export a static site](../export-a-static-site/)
-and serve the directory instead. The output is the runtime output written to disk, so nothing is
-lost, and the process-lifetime and restart concerns above disappear.
+The search index, the `llms.txt` files and the `.md` alternates are routes under the same mount, so
+the middleware gates them too. The search palette fetches its index with the visitor's session
+cookie.
+
+## Ship a content change
+
+With `DEBUG = False` the Content tree is read once per worker process and held for the life of that
+process. A content change is a deploy: restart the workers.
+
+If `CACHES["default"]` is a shared backend such as Redis or Memcached, a restart does not clear it.
+Rendered pages keep serving from it for up to `MDJANGO_CACHE_SECONDS` after the deploy, and so does
+a page whose header or settings you changed, because the cache key is the page path alone. Either
+accept the delay, clear that cache as a deploy step, or set the number low enough not to matter.
+With the default in-process cache a restart clears everything.
+
+Run `mdjango_build --check` before the deploy. A broken tree is a 500 on the first request, not a
+startup error. See [Validate content in CI](../validate-content-in-ci/).
+
+## Mount constraints
+
+Mount with `path("<prefix>/", include("mdjango.urls"))` and nothing else. The URLconf sets its own
+`mdjango` namespace, and the templates and services reverse routes by that name, so passing a
+different `namespace=` to `include()` or mounting the URLconf twice breaks every internal link.
+
+## If you only need the docs
+
+A Django process is the right host when the docs share a deployment with the rest of your project.
+When a project needs nothing but the docs, [Export a static site](../export-a-static-site/) writes
+the same pages to a directory for any static file host. The export has no login gate and no
+caching settings. The server that hosts it decides those.

@@ -1,17 +1,20 @@
 ---
 title: Export a static site
-weight: 70
-description: Write the whole site — pages, search index, LLM artifacts and assets — to a directory with mdjango_build, and host it at the prefix it was built for.
+weight: 100
+description: Write the whole site to a directory with mdjango_build and host it at the prefix it was built for, when nothing else from Django is needed.
 ---
 
 # Export a static site
 
-**Goal:** produce a directory you can serve from any static file host, identical to the running
-site.
+**Goal:** produce a directory a static file host can serve, identical to the running site, for a
+deployment that needs the docs and nothing else.
 
-**You need:** the consuming project configured as for runtime — the export uses the same settings,
-content directory and templates. The command's options are in the
-[`mdjango_build` reference](../../reference/mdjango-build/).
+Serving from your Django process is the primary way to run mdjango, and the one the rest of these
+docs assume. The export exists for the case where no Django process will run: a docs-only host, a
+preview bucket, an offline copy.
+
+**You need:** the project configured as for runtime. The export uses the same settings, Content tree
+and templates. The command's options are in the [`mdjango_build` reference](../../reference/mdjango-build/).
 
 ## Build the dist
 
@@ -20,11 +23,11 @@ python manage.py mdjango_build
 ```
 
 ```text
-exported 21 pages + 24 text files + 17 static files to dist
+exported N pages + N text files + N static files to dist
 ```
 
-The output directory defaults to `./dist`; pass a path to change it. The layout mirrors the live
-URLs, one directory per page, with file-shaped URLs written as files:
+The output directory defaults to `./dist`. Pass a path as the first argument to change it. The
+layout mirrors the live URLs, one directory per page, with file-shaped URLs written as files:
 
 ```text
 dist/
@@ -38,18 +41,40 @@ dist/
     llms-full.txt
     index.md
   static/
-    mdjango/                            # the stylesheet, fonts, controllers, vendored JS
+    mdjango/                            # stylesheet, fonts, controllers, vendored JS
 ```
 
-`docs/` is your mount prefix; `static/` is your `STATIC_URL`. Existing files under the static
-destination are removed and rewritten; page files are overwritten in place.
+`docs/` is your mount prefix. `static/` is your `STATIC_URL`. The static destination is deleted and
+rewritten on every build. Page files are overwritten in place.
+
+## Build with the default static storage
+
+The export copies mdjango's static tree with its plain filenames. If your production settings use a
+manifest storage backend (hashed filenames, as WhiteNoise's `CompressedManifestStaticFilesStorage`
+does), `{% static %}` writes hashed URLs into the HTML that the export never creates, and every
+stylesheet and script 404s.
+
+Run the export with the default `staticfiles` storage. Keep the manifest backend for the runtime
+site only, or point `DJANGO_SETTINGS_MODULE` at a settings module that omits it for the build.
+
+## Add your own static files
+
+Only mdjango's own static tree is copied. A stylesheet you load from a shadowed base component, a
+logo in a shadowed header, or an image linked from a page is referenced by the HTML but not
+written. Copy those into `dist/static/` after the build:
+
+```bash
+python manage.py mdjango_build
+cp -r acme-static/. dist/static/acme/
+```
 
 ## Host it at the same prefix
 
-The exported HTML references `/docs/…` and `/static/…` as **absolute paths** — the same ones the
-running site uses. Serve `dist/` as the root of a host so that `/docs/` resolves to
-`dist/docs/index.html`. Uploading only `dist/docs/` under a different prefix breaks every
-stylesheet, script and search request.
+The exported HTML references `/docs/…` and `/static/…` as absolute paths, the same ones the running
+site uses. Serve `dist/` as the root of a host so that `/docs/` resolves to `dist/docs/index.html`.
+Uploading only `dist/docs/` under a different prefix breaks every stylesheet, script and search
+request. Nothing rewrites paths; the dist is not relocatable. To change the prefix, change the mount
+in `urls.py` and rebuild.
 
 To preview locally:
 
@@ -57,34 +82,25 @@ To preview locally:
 python -m http.server --directory dist 8000
 ```
 
-Open <http://127.0.0.1:8000/docs/>. Search works from the exported `search-index.json`; dark mode,
-copy buttons and the drawer work from the exported controllers — nothing is fetched from the
-network.
+Open <http://127.0.0.1:8000/docs/>. Search works from the exported `search-index.json`. Dark mode,
+copy buttons and the drawer work from the exported controllers. Nothing is fetched from the network.
 
 ## Export without drafts
 
-Drafts are included whenever `MDJANGO_INCLUDE_DRAFTS` is true, and it defaults to `DEBUG`. Run the
-export with the settings you deploy with, or override for the build:
+Drafts are exported when `MDJANGO_INCLUDE_DRAFTS` is true, which defaults to `DEBUG`. Run the export
+with the settings you would deploy:
 
 ```bash
 DJANGO_SETTINGS_MODULE=config.settings_production python manage.py mdjango_build
 ```
 
-`MDJANGO_CACHE_SECONDS` has no effect on the export — the file server sets its own headers.
-
-## Gate content in CI
-
-```bash
-python manage.py mdjango_build --check
-```
-
-Renders every page, the search index and the LLM artifacts without writing, prints one line per
-failure to stderr, and exits non-zero if anything fails. Run it on every change to the content
-tree.
+`MDJANGO_CACHE_SECONDS` has no effect on the export. The file server sets its own headers, and
+there is no login gate: anything that needs authentication stays on the Django process.
 
 ## Know the limits
 
-- Links to a URL prefix other than the one built for are not rewritten; the dist is not relocatable.
-- Non-markdown files in the content directory are not copied. Images belong in your static files.
-- The export runs your Django project. It is a management command, not a standalone tool, so the
-  build environment needs the project's settings importable.
+- Without a root `_index.md` the first Page is written twice: once at `/docs/` and once at its own
+  URL. No canonical link is emitted.
+- Non-markdown files in the Content tree are not copied.
+- The export is a management command, not a standalone tool. The build environment needs the
+  project's settings importable.

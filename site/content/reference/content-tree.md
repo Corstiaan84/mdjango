@@ -6,8 +6,8 @@ description: Directory layout, index files, front-matter keys, ordering, slugs a
 
 # Content tree rules
 
-The Content tree is the directory `MDJANGO_CONTENT_DIR` points at. It is the only source of
-content: no database, no admin, no registration step.
+The Content tree is the directory `MDJANGO_CONTENT_DIR` points at. It is the only source of content.
+There is no database, no admin and no registration step.
 
 ## Layout
 
@@ -19,46 +19,51 @@ content: no database, no admin, no registration step.
 | Index page | the root `_index.md` | `content/_index.md` |
 | Loose page | a Page at the root or directly in a Section | `content/about.md`, `content/<section>/page.md` |
 
-- A directory inside a Subsection raises `ContentError` ("content is capped at three levels").
-- Only `.md` files are read. Other files are ignored; nothing is copied to the export.
+- A directory inside a Subsection raises `ContentError`. There is no fourth level.
+- Only `.md` files are read. Other files are ignored and nothing is copied to the export.
 - Directories are walked in filename order, then sorted by weight.
 
 ## Index files
 
-Recognised stems: `_index` and `index`.
+Recognised stems: `_index` and `index`. A file named `index.md` inside a Section or Subsection is
+treated as that group's index file: its body is discarded and it gets no URL. Name a Page anything
+else.
 
 | Location | `title` | `weight` | body |
 |---|---|---|---|
-| content root | Index page title; Home link label | ignored | **rendered** as the mount-root page |
+| content root | Index page title and Home link label | ignored | **rendered** as the mount-root page |
 | Section or Subsection | group title | group order | **discarded** |
 
-The root `_index.md` ignores `draft`; it is read unconditionally. A Section or Subsection with no
-`_index.md` takes its title from the humanised directory name (`-` and `_` → space, first letter
-capitalised) and weight `100`.
+The root `_index.md` ignores `draft`. It is read unconditionally. A Section or Subsection with no
+index file takes its title from the humanised directory name (`-` and `_` become spaces, first
+letter capitalised, the rest lower-cased) and weight `100`.
 
 ## Front-matter
 
-A leading block fenced by lines that are exactly `---`. Each line is split on its first `:`; the
-key is lower-cased and stripped; the value is stripped of whitespace and surrounding `'` or `"`.
-No YAML: no lists, no nesting, no multi-line values. A block without a closing `---` is treated as
-body. Unknown keys are ignored.
+A leading block fenced by lines that are exactly `---`. Each line is split on its first `:`. The
+key is lower-cased and stripped. The value is stripped of whitespace and of surrounding `'` or `"`.
+Lines without a colon are skipped. No YAML: no lists, no nesting, no multi-line values. A block
+without a closing `---` is treated as body. Unknown keys are ignored.
 
 | Key | Type | Default | Notes |
 |---|---|---|---|
 | `title` | string | first `#` heading in the body, else humanised filename stem | |
-| `weight` | integer | `100` | non-integer values fall back to the default |
-| `draft` | boolean | `false` | accepts `true`/`yes`/`on` and `false`/`no`/`off`, case-insensitive |
-| `description` | string | `""` | suffix of the page's `llms.txt` entry; page-level only |
+| `weight` | integer | `100` | a non-integer value falls back to the default |
+| `draft` | boolean | `false` | accepts `true`/`yes`/`on` and `false`/`no`/`off`, case-insensitive. Anything else is the default. |
+| `description` | string | `""` | suffix of the Page's `llms.txt` entry. Page-level only. |
+
+The first-heading fallback matches a `#` line with up to three leading spaces and optional closing
+`#`s.
 
 ## Ordering
 
-Siblings sort by `(weight, title.lower())`, lowest weight first, **regardless of kind**: Pages,
-Subsections and Sections in the same parent share one sequence. A run of consecutive loose pages
-at the root renders as one untitled navigation group at its position and as a `## Documentation`
+Siblings sort by `(weight, title.lower())`, lowest weight first, regardless of kind: Pages,
+Subsections and Sections in the same parent share one sequence. A run of consecutive Loose pages at
+the root renders as one untitled navigation group at its position and as a `## Documentation`
 heading in `llms.txt`.
 
-Previous/next links follow the flattened navigation order across Section and Subsection
-boundaries.
+Previous/next links follow the flattened navigation order across Section and Subsection boundaries.
+The Index page is not part of that order.
 
 ## Visibility
 
@@ -69,6 +74,7 @@ boundaries.
 ## Slugs and URLs
 
 Slugs come from Django's `slugify` applied to the filename stem (Pages) or directory name (groups).
+`slugify` lower-cases, so `Hello.md` and `hello.md` collide.
 
 | Stored at | Path | Served at |
 |---|---|---|
@@ -78,15 +84,17 @@ Slugs come from Django's `slugify` applied to the filename stem (Pages) or direc
 | `content/how-to/hosts/harden.md` | `how-to/hosts/harden` | `/<mount>/how-to/hosts/harden/` |
 
 Sections and Subsections have no URL. Each Page also has a markdown alternate at the same path with
-`.md` instead of the trailing slash (`/<mount>/how-to/deploy.md`; the Index page at `/<mount>/index.md`).
+`.md` in place of the trailing slash (`/<mount>/how-to/deploy.md`; the Index page at
+`/<mount>/index.md`).
 
 ## Errors
 
-All are `mdjango.features.common.exceptions.ContentError`, raised when the registry is built: on
-the first request in a running site, or immediately by `mdjango_build`.
+All are `mdjango.features.common.exceptions.ContentError`, raised when the registry is built. In a
+running site that is the first request after a process start. No view catches it, so the request
+returns a 500. `mdjango_build` catches it and exits with the message.
 
 | Condition | Message contains |
 |---|---|
 | `MDJANGO_CONTENT_DIR` is not a directory | `content dir does not exist` |
 | a directory inside a Subsection | `capped at three levels` |
-| two files resolve to the same path (including case-only differences, `Hello.md` vs `hello.md`) | `duplicate page path` |
+| two files resolve to the same path | `duplicate page path` |

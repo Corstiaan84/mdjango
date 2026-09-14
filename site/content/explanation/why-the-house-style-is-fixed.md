@@ -1,63 +1,68 @@
 ---
 title: Why the house style is fixed
-weight: 20
-description: One theme, seven knobs, no build step — the reasoning behind mdjango's override surface and its limits.
+weight: 30
+description: One Theme, seven knobs, no build step. The reasoning behind mdjango's Override surface and its limits.
 ---
 
 # Why the house style is fixed
 
-mdjango ships exactly one Theme. You can change its colours, its typeface and its size; you cannot
-change its layout or its personality without forking templates. This is deliberate, and this page
+mdjango ships exactly one Theme. You can change its colours, its typeface and its size. You cannot
+change its layout or its personality without copying templates. This is deliberate, and this page
 lays out the trade.
 
 ## The drop-in promise
 
-The point of mdjango is that installing it gives you a finished documentation site. A neutral,
-fully themeable base would hand you back the work it exists to remove: choosing a type scale,
-tuning a palette, designing a sidebar. So the **House style** — flat, monochrome, typographic, one
-layout — is fixed, and adopting mdjango means adopting it.
+The point of mdjango is that installing it into a project gives that project a finished
+documentation site. A neutral, fully themeable base would hand back the work it exists to remove:
+choosing a type scale, tuning a palette, designing a sidebar. So the House style, flat, monochrome,
+typographic, one layout, is fixed, and adopting mdjango means adopting it.
 
 ## Two ramps, set by their ends
 
-What *is* open is the **Override surface**: the two ends of each colour Ramp, an accent, the font
-and the base size. Seven CSS custom properties.
+What is open is the Override surface: the two ends of each colour Ramp, an accent, the font and the
+base size. Seven CSS custom properties.
 
-The interior stops of each Ramp — raised surfaces, body text, muted text — are derived from the
-ends and locked. That is what makes the surface safe: you cannot pick a body-text colour that fails
-against your background, because you do not pick it. The ladder is computed from the two colours
-you did pick.
+The interior stops of each Ramp (raised surfaces, body text, muted text) are Derived values,
+computed from the ends and locked. That is what makes the surface safe: you cannot pick a body-text
+colour that fails against your background, because you do not pick it. The ladder is computed from
+the two colours you did pick.
 
-The derivation mixes *within* a Ramp, never across the palette. An earlier model mixed text toward
-the background, which averaged away the chroma of any tinted palette and shipped visibly greyer
-than its design. Giving each Ramp its own two ends fixed that, and the exposed set grew from five
-tokens to seven as a result. Those seven names are treated as a public API: renaming or dropping
-one is a versioned breaking change.
+The derivation mixes within a Ramp, never across the palette. An earlier model mixed text toward
+the background, which averaged away the chroma of any tinted palette and shipped visibly greyer than
+its design. Giving each Ramp its own two ends fixed that, and the exposed set grew from five tokens
+to seven as a result.
 
-## The shell is included, and overridable
+Those seven names are a public API. Renaming or dropping one is a breaking change and is versioned
+as one. The markup of the templates, their class names and their context keys are not part of that
+promise. When you shadow a component you own a copy, and the copy can fall behind.
 
-mdjango renders the whole page — header, navigation, article, table of contents, prev/next — from
-your settings. Most projects want exactly that. The escape hatch for the rest is template
-shadowing: replace one cotton component, or the base document, or the page template. Nothing in the
-package uses `{% block %}`, because a block contract would freeze the markup; shadowing a whole
-component lets mdjango evolve its own templates while a project that wants different chrome owns a
-copy.
+## The shell is included, and overridable by copy
+
+mdjango renders the whole page from your settings: header, navigation, article, table of contents,
+prev/next. Most projects want exactly that. The escape hatch for the rest is template shadowing:
+replace one cotton component, or the base document, or the page template. Nothing in the package
+uses `{% block %}`, because a block contract would freeze the markup. Shadowing a whole component
+lets mdjango evolve its own templates while a project that wants different chrome owns a copy.
+
+The seam is coarse on purpose, and it has a cost you will meet early: there is no slot for one extra
+stylesheet. Adding one means copying the base document. That is the price of not freezing the
+document's markup into a contract.
 
 ## No build step, no CDN
 
-Everything the shell needs ships in the wheel: a precompiled stylesheet, vendored Stimulus and
-MiniSearch, six `woff2` faces of the default font. A reusable app cannot assume a consumer has
-Node, a bundler, network access at page load, or a permissive content-security policy — and a
-static export opened from disk has none of those. A font that only sometimes arrives is not a
-house style.
+Everything the Shell needs ships in the wheel: a precompiled stylesheet, vendored Stimulus and
+MiniSearch, six `woff2` faces of the default font. A reusable app cannot assume the project has
+Node, a bundler, network access at page load, or a permissive content-security policy. A font that
+only sometimes arrives is not a House style.
 
-For the same reason there are no utility classes: a stylesheet compiled in mdjango's repository
+For the same reason there are no utility classes. A stylesheet compiled in mdjango's repository
 cannot contain utilities for markup you write in a shadowed template. The package ships tokens and
 semantic classes, both of which your own toolchain can build on.
 
 ## What you give up
 
 - A different layout, a card-based or bordered restyle, an independent border hue: not reachable
-  through the seeds. Fork the templates and stylesheet.
-- A proportional body face is reachable (`--font`); code stays monospace.
-- A configurable navigation depth: rejected, because it would let a consumer configure their way
-  into a sidebar the shell cannot render legibly.
+  through the seeds. Copy the templates and write your own stylesheet.
+- A proportional body face is reachable through `--font`. Code stays monospace.
+- A configurable navigation depth: rejected, because it would let a project configure its way into
+  a sidebar the Shell cannot render legibly. See [Why three levels](../why-three-levels/).

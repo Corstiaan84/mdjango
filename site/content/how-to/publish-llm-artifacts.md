@@ -1,61 +1,67 @@
 ---
 title: Publish the LLM artifacts
-weight: 80
-description: Make llms.txt, llms-full.txt and per-page markdown say what you want, expose llms.txt at the site root, or switch the whole surface off.
+weight: 60
+description: Describe the site and its pages for llms.txt, serve it at the domain root, or switch the markdown surface off.
 ---
 
 # Publish the LLM artifacts
 
-**Goal:** control the machine-readable views of your docs — the `llms.txt` family — that mdjango
-publishes beside the HTML.
+**Goal:** make the machine-readable views of the docs useful to an agent, or turn them off.
 
-**You need:** a mounted site. The routes are listed in the [URL reference](../../reference/urls/).
+**You need:** a served Content tree. The artifacts are on by default. Their exact format and routes
+are in the [URLs reference](../../reference/urls/).
 
-## Know what is published
-
-Three artifacts, all generated from the *source* markdown of the Content tree and served under the
-mount prefix:
+## Know what is already published
 
 | URL | Content |
 |---|---|
-| `/docs/llms.txt` | Title, optional summary, then one `- [Title](…/page.md): description` entry per page under `##` Section and `###` Subsection headings. |
-| `/docs/llms-full.txt` | Title and summary, then every page's markdown in navigation order, separated by `---`. |
-| `/docs/<page>.md` (and `/docs/index.md`) | One page's markdown, with a `# Title` heading prepended if the body does not open with one. |
+| `/docs/llms.txt` | site title, optional summary, one linked entry per page grouped by Section and Subsection |
+| `/docs/llms-full.txt` | every page's markdown in one document, in navigation order |
+| `/docs/<page>.md` | one page's markdown. Also `/docs/index.md` for the Index page |
 
-Every HTML page advertises its alternate with
-`<link rel="alternate" type="text/markdown" href="…/page.md">`, and the header links to the two
-site-wide files. The static export writes all of them.
+All three are source markdown, not rendered HTML, and are served with
+`text/markdown; charset=utf-8`. Every HTML page carries a `<link rel="alternate" type="text/markdown">`
+pointing at its own `.md`.
 
-Inside a Section, `llms.txt` lists the Section's own pages before its Subsections, even when weights
-interleave them in the navigation — markdown headings cannot return to Section level once a `###`
-has opened. `llms-full.txt` keeps the exact navigation order.
-
-## Write the summary and the descriptions
+## Describe the site
 
 ```python
-MDJANGO_DESCRIPTION = "Deploy container apps to a server you own, with one config file."
+# settings.py
+MDJANGO_SITE_TITLE = "Acme documentation"
+MDJANGO_DESCRIPTION = "Install, configure and operate the Acme CLI and its hosted control plane."
 ```
 
-renders as the blockquote under the title:
+The title becomes the `#` heading of both site-wide artifacts. The description becomes a `>`
+blockquote under it. Without a title the heading falls back to `MDJANGO_BRAND`, then to
+"Documentation".
+
+## Describe each page
 
 ```markdown
-# acme docs
-
-> Deploy container apps to a server you own, with one config file.
-
-## Getting started
-- [Quickstart](/docs/getting-started/quickstart.md): From a fresh server to a running app.
+---
+title: Roll back a deploy
+description: Return a host to the previous release without touching the database.
+---
 ```
 
-The per-page suffix comes from each page's `description` front-matter key. Pages without one are
-listed without a suffix. Write descriptions as a single sentence an agent can select on.
+The `description` key becomes the suffix of the page's `llms.txt` entry:
 
-## Serve llms.txt at the site root
+```text
+- [Roll back a deploy](/docs/how-to/rollback.md): Return a host to the previous release without touching the database.
+```
 
-The convention expects `/llms.txt` at the domain root; mdjango serves it under the mount. Add a
-redirect in your project's `urls.py`:
+Write one sentence an agent can select on. A page without a description is listed without a suffix.
+
+Inside a Section, `llms.txt` lists the Section's own Pages first and then each Subsection under a
+`###` heading, even where the navigation interleaves them by weight. Markdown headings cannot
+express interleaving without misfiling a page.
+
+## Serve llms.txt at the domain root
+
+The convention expects `/llms.txt` at the root. mdjango serves it under the mount. Redirect:
 
 ```python
+# urls.py
 from django.urls import include, path
 from django.views.generic import RedirectView
 
@@ -68,9 +74,10 @@ urlpatterns = [
 ## Switch the surface off
 
 ```python
+# settings.py
 MDJANGO_LLM_DOCS = False
 ```
 
-All four markdown routes return 404, the header and drawer links disappear, and the `<link
-rel="alternate">` is dropped from every page. `search-index.json` is unaffected — search is not part
-of this surface.
+The four markdown routes (`llms.txt`, `llms-full.txt`, `index.md`, `<page>.md`) return 404, the
+header and drawer links disappear, and the `<link rel="alternate">` is dropped. `search-index.json`
+is unaffected. Search is not part of this surface and cannot be disabled.
