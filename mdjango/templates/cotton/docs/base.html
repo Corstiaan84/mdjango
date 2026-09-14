@@ -1,4 +1,4 @@
-{% load static %}<c-vars page_md_url="" /><!doctype html>
+{% load static %}<c-vars page_md_url="" extra_css="" /><!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -8,6 +8,8 @@
   {# no-flash: set the theme before first paint, paired with the `theme` controller #}
   <script>(function(){try{var t=localStorage.getItem('mdjango-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
   <link rel="stylesheet" href="{% static 'mdjango/mdjango.css' %}">
+  {# consumer overrides (MDJANGO_EXTRA_CSS): loaded after ours so equal-specificity seed rules win #}
+  {% for href in extra_css %}<link rel="stylesheet" href="{% static href %}">{% endfor %}
   {# import map (before any module) points Stimulus at the vendored ESM build — no CDN, no build #}
   <script type="importmap">{"imports":{"@hotwired/stimulus":"{% static 'mdjango/vendor/stimulus.js' %}","minisearch":"{% static 'mdjango/vendor/minisearch.js' %}"}}</script>
 </head>

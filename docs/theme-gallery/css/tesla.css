@@ -1,0 +1,26 @@
+/* Tesla — crisp white/graphite, red accent, Helvetica-style sans (aesthetic homage) */
+:root {
+  --background: #ffffff;
+  --border: #e3e3e3;
+  --foreground: #171a20;
+  --foreground-subtle: #5c5e62;
+  --accent: #e82127;
+  /* Helvetica/Arial metrics; code stays mono via --code-font */
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+:root[data-theme="dark"] {
+  --background: #0f1114;
+  --border: #26292e;
+  --foreground: #f4f4f4;
+  --foreground-subtle: #8e9196;
+  --accent: #ff3b3f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0f1114;
+    --border: #26292e;
+    --foreground: #f4f4f4;
+    --foreground-subtle: #8e9196;
+    --accent: #ff3b3f;
+  }
+}

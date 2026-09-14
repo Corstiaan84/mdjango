@@ -1,0 +1,27 @@
+/* Apple — neutral greys, near-black text, blue accent, San-Francisco-style sans (aesthetic homage) */
+:root {
+  --background: #fbfbfd;
+  --border: #d2d2d7;
+  --foreground: #1d1d1f;
+  --foreground-subtle: #86868b;
+  --accent: #0071e3;
+  /* code stays mono via --code-font (not a seed); only body/chrome change */
+  --font: -apple-system, "SF Pro Text", system-ui, sans-serif;
+  --font-size: 15px;
+}
+:root[data-theme="dark"] {
+  --background: #0b0b0d;
+  --border: #2a2a2e;
+  --foreground: #f5f5f7;
+  --foreground-subtle: #86868b;
+  --accent: #2997ff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0b0b0d;
+    --border: #2a2a2e;
+    --foreground: #f5f5f7;
+    --foreground-subtle: #86868b;
+    --accent: #2997ff;
+  }
+}

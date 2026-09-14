@@ -89,6 +89,10 @@ intermediate contrast steps cannot be broken:
 }
 ```
 
+Point `MDJANGO_EXTRA_CSS` at the stylesheet holding those `:root` rules and mdjango loads it after
+its own sheet — no template to shadow. Dark mode is two selectors; override both. See the
+*Change the colours and type* how-to for the full recipe.
+
 The three interior stops — `--surface`, `--foreground-body`, `--foreground-muted` — are
 `color-mix()`-derived from the ends of their own ramp and locked. Code is always mono
 (`--code-font`), independent of `--font`.

@@ -77,6 +77,24 @@ def test_no_home_link_without_a_root_index(client, settings, tmp_path):
     assert 'href="/"' not in sidebar
 
 
+def test_extra_css_links_load_after_the_house_sheet(client, settings):
+    """MDJANGO_EXTRA_CSS is the supported seed-override hook: each name becomes a <link> after
+    mdjango's own sheet, so an equal-specificity `:root` rule wins (the sheet is unlayered)."""
+    settings.MDJANGO_EXTRA_CSS = ("acme/theme.css", "acme/brand.css")
+    body = client.get("/getting-started/quickstart/").content.decode()
+    assert '<link rel="stylesheet" href="/static/acme/theme.css">' in body
+    assert '<link rel="stylesheet" href="/static/acme/brand.css">' in body
+    # order: house sheet first, then the overrides in the order given
+    house = body.index("/static/mdjango/mdjango.css")
+    assert house < body.index("/static/acme/theme.css") < body.index("/static/acme/brand.css")
+
+
+def test_no_extra_css_link_by_default(client):
+    """The unbranded default ships exactly one stylesheet — the single-sheet, no-CDN design."""
+    body = client.get("/getting-started/quickstart/").content.decode()
+    assert body.count('rel="stylesheet"') == 1
+
+
 def test_breadcrumb_shows_section_and_page(client):
     body = client.get("/getting-started/quickstart/").content.decode()
     assert "Getting started" in body

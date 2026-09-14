@@ -11,6 +11,7 @@ from pathlib import Path
 
 from django.apps import apps
 from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.core.management.base import BaseCommand, CommandError
 from django.urls import reverse
 
@@ -76,6 +77,7 @@ class Command(BaseCommand):
             text_assets=self._llm_artifacts(registry) if get_conf().llm_docs else (),
             static_url=settings.STATIC_URL or "/static/",
             static_src=Path(apps.get_app_config("mdjango").path) / "static",
+            extra_css=self._extra_css_sources(),
         )
         self.stdout.write(
             self.style.SUCCESS(
@@ -90,6 +92,25 @@ class Command(BaseCommand):
             xml = render_sitemap_xml(sitemap_pages(registry), options["base_url"])
             path = exporter.write_text_asset("sitemap.xml", xml)
             self.stdout.write(self.style.SUCCESS(f"wrote {path}"))
+
+    def _extra_css_sources(self) -> list[tuple[str, Path]]:
+        """Resolve each ``MDJANGO_EXTRA_CSS`` name to its source file via the staticfiles finders,
+        so the export can copy it. The runtime serves these through the consumer's Django; the
+        export has no collectstatic, so an unresolved name would be a silent 404 in the dist — we
+        warn instead and skip it."""
+        sources: list[tuple[str, Path]] = []
+        for name in get_conf().extra_css:
+            found = finders.find(name)
+            if found:
+                sources.append((name, Path(found)))
+            else:
+                self.stderr.write(
+                    self.style.WARNING(
+                        f"MDJANGO_EXTRA_CSS: {name!r} not found by the staticfiles finders — "
+                        "its <link> will 404 in the export. Is the file on a static path?"
+                    )
+                )
+        return sources
 
     def _llm_artifacts(self, registry) -> list[tuple[str, str]]:
         """The ``(url, text)`` LLM files to write into the dist: ``llms.txt``, ``llms-full.txt``,

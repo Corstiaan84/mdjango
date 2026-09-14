@@ -1,0 +1,24 @@
+/* Forest — cool green, green accent */
+:root {
+  --background: #f4f8f2;
+  --border: #d6e4d0;
+  --foreground: #182119;
+  --foreground-subtle: #6d8070;
+  --accent: #2f8f4e;
+}
+:root[data-theme="dark"] {
+  --background: #101711;
+  --border: #26331f;
+  --foreground: #e4efe2;
+  --foreground-subtle: #85977f;
+  --accent: #58c07a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #101711;
+    --border: #26331f;
+    --foreground: #e4efe2;
+    --foreground-subtle: #85977f;
+    --accent: #58c07a;
+  }
+}

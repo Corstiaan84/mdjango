@@ -1,36 +1,36 @@
 ---
 title: Change the colours and type
 weight: 40
-description: Load a stylesheet after mdjango's and set the seven CSS seeds, for light and for dark.
+description: Point MDJANGO_EXTRA_CSS at a stylesheet that sets the seven CSS seeds, light and dark.
 ---
 
 # Change the colours and type
 
 **Goal:** give the docs your palette, typeface and base size without touching the layout.
 
-**You need:** a directory listed in `TEMPLATES[0]["DIRS"]` and a static directory your project
-serves. The token names and shipped defaults are in the [theme tokens reference](../../reference/theme-tokens/).
+**You need:** a static directory your project serves. The token names and shipped defaults are in
+the [theme tokens reference](../../reference/theme-tokens/).
 
-## 1. Load a stylesheet after mdjango's
+## 1. Point mdjango at your stylesheet
 
-mdjango's base document loads one stylesheet and has no setting for a second. Until it does, copy
-the shipped `mdjango/templates/cotton/docs/base.html` from your installed package to
-`templates/cotton/docs/base.html` in a directory listed in `TEMPLATES[0]["DIRS"]`, and add one line
-after the existing stylesheet link:
+Set `MDJANGO_EXTRA_CSS` in your Django settings to a static path — a string, or a list for several.
+mdjango loads each one with a `<link>` after its own sheet, so your rules win without touching any
+template:
 
-```django
-<link rel="stylesheet" href="{% static 'mdjango/mdjango.css' %}">
-<link rel="stylesheet" href="{% static 'acme/docs-theme.css' %}">
+```python
+# settings.py
+MDJANGO_EXTRA_CSS = "acme/docs-theme.css"
 ```
 
-Change nothing else in the copy. Every other line in that file is load-bearing for dark mode, search
-and the drawer. Your copy is found first because django-cotton reads `TEMPLATES["DIRS"]` before app
-directories. When you upgrade mdjango, diff your copy against the shipped file.
+Each value is a `{% static %}` name, resolved through your static files the same way mdjango's own
+sheet is, so place the file under a static directory your project serves (e.g.
+`acme/static/acme/docs-theme.css`). External/CDN URLs are not supported here — the file must be on a
+static path. mdjango's sheet is one flat file with no `@layer`, so a later rule of equal specificity
+wins.
 
 ## 2. Set the seeds
 
-mdjango's stylesheet is one flat file with no `@layer`, so a later rule of equal specificity wins.
-Create `acme/docs-theme.css` in your static files:
+Create the file you named (`acme/docs-theme.css`) and set your seeds:
 
 ```css
 :root {
@@ -100,6 +100,8 @@ The `@font-face` rules for IBM Plex Mono ship separately for templates mdjango d
 
 ## If you also export a static site
 
-`mdjango_build` copies only mdjango's own static tree into the export. Your `acme/docs-theme.css`
-is referenced by the exported HTML but not written. Copy it into the export's static directory
-yourself after the build. See [Export a static site](../export-a-static-site/).
+`mdjango_build` resolves each `MDJANGO_EXTRA_CSS` name through the staticfiles finders and copies
+the file into the export, so a themed build is self-contained — no extra step. If a name can't be
+resolved the build prints a warning and leaves it out; check the file is on a static path the
+finders search (an app's `static/` directory or a `STATICFILES_DIRS` entry). See
+[Export a static site](../export-a-static-site/).

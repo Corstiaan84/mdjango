@@ -57,6 +57,20 @@ class DistExporter:
         shutil.copytree(static_src, dest)
         return sum(1 for p in dest.rglob("*") if p.is_file())
 
+    def copy_extra_css(self, static_url: str, sources: Iterable[tuple[str, Path]]) -> int:
+        """Copy the consumer's ``MDJANGO_EXTRA_CSS`` stylesheets under the dist's static prefix, so
+        the ``<link>``s the shell emits resolve offline. Each source is a ``(static_name,
+        src_file)`` pair — the ``{% static %}`` name the HTML references, and the file the adapter
+        resolved for it. Runs after :meth:`copy_static`; these land beside mdjango's own tree."""
+        prefix = self.output_dir / static_url.strip("/")
+        count = 0
+        for static_name, src in sources:
+            dest = prefix / static_name.strip("/")
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dest)
+            count += 1
+        return count
+
     def build(
         self,
         *,
@@ -66,9 +80,12 @@ class DistExporter:
         text_assets: Iterable[tuple[str, str]] = (),
         static_url: str,
         static_src: Path | None,
+        extra_css: Iterable[tuple[str, Path]] = (),
     ) -> ExportResult:
         """Lay out the dist. ``text_assets`` are ``(url, text)`` files (the LLM artifacts:
-        ``llms.txt``, ``llms-full.txt``, and one ``.md`` per page) written verbatim."""
+        ``llms.txt``, ``llms-full.txt``, and one ``.md`` per page) written verbatim. ``extra_css``
+        are the consumer's resolved ``(static_name, src_file)`` theme stylesheets to copy alongside
+        mdjango's own static tree (``MDJANGO_EXTRA_CSS``)."""
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         pages = 0
@@ -83,6 +100,7 @@ class DistExporter:
             text_files += 1
 
         static_files = self.copy_static(static_url, static_src) if static_src else 0
+        static_files += self.copy_extra_css(static_url, extra_css)
         return ExportResult(
             output_dir=self.output_dir,
             pages=pages,
