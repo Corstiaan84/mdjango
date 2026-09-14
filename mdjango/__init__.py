@@ -6,4 +6,8 @@ glossary and ``docs/adr/`` for the decisions.
 """
 
 __all__ = ["__version__"]
-__version__ = "0.1.0.dev0"
+
+try:
+    from ._version import __version__
+except ImportError:  # a source checkout that was never built (dev harness / tests)
+    __version__ = "0.0.0+dev"

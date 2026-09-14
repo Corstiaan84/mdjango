@@ -8,3 +8,7 @@ __pycache__/
 *.py[cod]
 db.sqlite3
 /staticfiles/
+site/staticfiles/
+
+# hatch-vcs writes the version into the package at build time
+mdjango/_version.py
