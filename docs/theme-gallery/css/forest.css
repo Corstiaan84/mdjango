@@ -5,6 +5,8 @@
   --foreground: #182119;
   --foreground-subtle: #6d8070;
   --accent: #2f8f4e;
+  /* old-style (Times-like) serif; code stays mono via --code-font */
+  --font: "Liberation Serif", "Times New Roman", serif;
 }
 :root[data-theme="dark"] {
   --background: #101711;

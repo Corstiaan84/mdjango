@@ -5,6 +5,8 @@
   --foreground: #2a1a1c;
   --foreground-subtle: #9a7b7d;
   --accent: #c02b4e;
+  /* editorial serif; code stays mono via --code-font */
+  --font: "Noto Serif", Georgia, serif;
 }
 :root[data-theme="dark"] {
   --background: #1e1416;

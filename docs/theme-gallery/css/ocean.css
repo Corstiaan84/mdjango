@@ -5,6 +5,8 @@
   --foreground: #16202e;
   --foreground-subtle: #6b7d93;
   --accent: #2563eb;
+  /* humanist sans; code stays mono via --code-font */
+  --font: "Noto Sans", system-ui, sans-serif;
 }
 :root[data-theme="dark"] {
   --background: #0e1620;
