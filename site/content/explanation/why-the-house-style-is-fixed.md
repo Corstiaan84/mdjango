@@ -45,9 +45,9 @@ take away the freedom to improve the Shell; a partial extension point would prod
 half House style and half something else. A project that needs different chrome has outgrown
 mdjango and should fork it.
 
-The one gap you will meet early is that there is no setting for loading a second stylesheet, which
-the seeds need. [Change the colours and type](../../how-to/change-colours-and-type/) shows the
-current workaround.
+Overriding the seeds is the exception, and it stays outside that markup: `MDJANGO_EXTRA_CSS` loads
+your stylesheet after the Shell's own, so you re-colour and re-type the House style without touching
+a template. [Change the colours and type](../../how-to/change-colours-and-type/) shows it.
 
 ## No build step, no CDN
 

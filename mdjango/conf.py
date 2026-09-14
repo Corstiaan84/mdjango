@@ -1,9 +1,11 @@
 """Consumer-facing configuration.
 
 Every knob is a Django setting read lazily through :func:`get_conf`, so a consumer configures
-mdjango the same way they configure the rest of their project — in ``settings.py``. Nothing here
-touches the *theme* override surface (the five CSS seeds); that is set in the template/CSS layer,
-per ADR 0003. These settings drive the **shell**: what the chrome says and links to.
+mdjango the same way they configure the rest of their project — in ``settings.py``. These settings
+drive the **shell** (what the chrome says and links to) and, via ``MDJANGO_EXTRA_CSS``, *load* the
+consumer's own stylesheet. They do **not** set the *theme* override surface itself: the seven CSS
+seeds are declared in CSS, per ADR 0003 — ``MDJANGO_EXTRA_CSS`` only points at the stylesheet that
+overrides them, it does not carry seed values.
 """
 
 from __future__ import annotations
@@ -34,6 +36,10 @@ class Conf:
     version: str
     github_url: str
     header_links: tuple[HeaderLink, ...] = field(default_factory=tuple)
+    # Extra stylesheets loaded after mdjango's own, as {% static %} names — the supported way to
+    # override the seven CSS seeds without shadowing base.html (ADR 0003). Values live in the CSS;
+    # this only loads it. A later rule of equal specificity wins (the shipped sheet is unlayered).
+    extra_css: tuple[str, ...] = field(default_factory=tuple)
     site_title: str = ""
     # One-line site summary — the blockquote in the LLM artifacts (llms.txt / llms-full.txt).
     description: str = ""
@@ -77,6 +83,13 @@ def get_conf() -> Conf:
         for link in raw_links
     )
 
+    # A bare string is the common one-file case; an iterable is several. Normalise to a tuple of
+    # non-empty names either way (a string is itself iterable, so it must be special-cased first).
+    raw_css = _get("MDJANGO_EXTRA_CSS", ())
+    if isinstance(raw_css, str):
+        raw_css = (raw_css,)
+    extra_css = tuple(str(c) for c in raw_css if str(c).strip())
+
     return Conf(
         content_dir=content_dir,
         brand=_get("MDJANGO_BRAND", "docs"),
@@ -84,6 +97,7 @@ def get_conf() -> Conf:
         version=_get("MDJANGO_VERSION", ""),
         github_url=_get("MDJANGO_GITHUB_URL", ""),
         header_links=links,
+        extra_css=extra_css,
         site_title=_get("MDJANGO_SITE_TITLE", ""),
         description=_get("MDJANGO_DESCRIPTION", ""),
         llm_docs=bool(_get("MDJANGO_LLM_DOCS", True)),

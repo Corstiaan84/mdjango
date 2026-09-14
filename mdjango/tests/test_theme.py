@@ -23,6 +23,8 @@ SRC = THEME / "src"
 STYLESHEET = STATIC / "mdjango.css"
 FONTS_SHEET = STATIC / "fonts.css"
 
+# The five *colour* seeds. With --font and --font-size (checked by the type-scale tests above)
+# these make up the seven-seed override contract (ADR 0003); the three DERIVED stops are locked.
 SEEDS = ("--background", "--border", "--foreground", "--foreground-subtle", "--accent")
 DERIVED = ("--surface", "--foreground-body", "--foreground-muted")
 

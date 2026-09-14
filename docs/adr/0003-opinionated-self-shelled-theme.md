@@ -55,8 +55,9 @@ prev/next — not just the article body.
    the box mdjango renders `<html>`, header, nav, article, TOC (and an empty footer slot) from
    Django settings: brand title/logo string, `home_url`, `version` (display string), `github_url`,
    optional header links. A consumer who wants their own chrome overrides `base.html` or shadows
-   the header/footer cotton components. `version` is a display string only — multi-version docs
-   are deferred.
+   the header/footer cotton components. *(Colour and type do **not** require this — those load via
+   the `MDJANGO_EXTRA_CSS` setting; see the 2026-09-14 amendment.)* `version` is a display string
+   only — multi-version docs are deferred.
 
 4. **Bespoke prose CSS, not `@tailwindcss/typography`.** All rendered-markdown elements are styled
    by hand against the tokens, so there is no `--tw-prose-*` remapping layer between the plugin's
@@ -94,6 +95,20 @@ prev/next — not just the article body.
   — under the old model they tracked the wrong thing. The dark theme re-states the two text ratios
   (48.6% / 18.9% vs 54.9% / 32.6%) because its ladder is deliberately compressed at the
   low-emphasis end; the surface ramp's 59% serves both.
+- **Amendment (2026-09-14): the seed override surface loads through a setting, `MDJANGO_EXTRA_CSS`,
+  not by shadowing `base.html`.** Decision 2 makes the seven seed *names* a public API, but a
+  consumer still has to get their stylesheet into the `<head>`, and originally the only documented
+  route was to copy the shipped `base.html` into `TEMPLATES["DIRS"]` and add a `<link>`. That
+  contradicted this ADR's own position that the templates' markup and class names are **not** a
+  versioned promise: it sent every *theming* consumer to copy a file mdjango may change in any
+  release. `MDJANGO_EXTRA_CSS` (a `{% static %}` name, or an iterable of them) is now read in
+  `conf.py` and rendered as one `<link>` per entry — after mdjango's own sheet, so an
+  equal-specificity `:root` rule wins on the flat unlayered sheet. `mdjango_build` resolves each
+  name through the staticfiles finders and copies it into the static export, warning on any it
+  cannot resolve so a themed export is never a silent 404. The seed *values* still live in CSS per
+  decision 2 — the setting only *loads* the stylesheet, it carries no colour — so this is additive,
+  not a reversal. Template shadowing stays the escape hatch for *chrome* (decision 3); it is no
+  longer the route for colour and type.
 - **The reset must not out-specify the component rules.** `.docs-body a { color: … }` is (0,1,1)
   and silently beat every single-class rule that colours a link (`.docs-nav-link`,
   `.docs-toc-link`, `.docs-header-link`), rendering the whole sidebar and TOC at full

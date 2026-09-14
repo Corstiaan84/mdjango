@@ -8,8 +8,9 @@ description: Every MDJANGO_* Django setting, its type, default, effect, and what
 
 All configuration is ordinary Django settings. mdjango reads them on every request through
 `mdjango.conf.get_conf()`, so there is no restart to pick up a change under `runserver`.
-`MDJANGO_CONTENT_DIR` is required. Everything else has a default. None of these affect the Theme's
-colours or type; those are CSS ([theme tokens](../theme-tokens/)).
+`MDJANGO_CONTENT_DIR` is required. Everything else has a default. The Theme's colours and type are
+set in CSS ([theme tokens](../theme-tokens/)), not here — the one setting that touches them,
+`MDJANGO_EXTRA_CSS`, only *loads* your stylesheet; it carries no values.
 
 ## Content
 
@@ -29,6 +30,7 @@ colours or type; those are CSS ([theme tokens](../theme-tokens/)).
 | `MDJANGO_VERSION` | `str` | `""` | Display string rendered as a chip in the header. Hidden when empty. Not used for routing. |
 | `MDJANGO_GITHUB_URL` | `str` | `""` | Renders a header link labelled `github`. Hidden when empty. |
 | `MDJANGO_HEADER_LINKS` | iterable of `{"label": str, "url": str}` dicts or `mdjango.conf.HeaderLink` | `()` | Extra header links, in order, between the `llms.txt` links and the GitHub link. |
+| `MDJANGO_EXTRA_CSS` | `str` or iterable of `str` | `()` | Stylesheet `{% static %}` name(s), linked after mdjango's own sheet — the supported way to override the [seven CSS seeds](../theme-tokens/) without shadowing a template. A string is one file; an iterable is several, in order. See [Change the colours and type](../../how-to/change-colours-and-type/). |
 
 ## LLM artifacts
 
@@ -53,6 +55,7 @@ first request, as a 500 in a running site or as an error from `mdjango_build`.
 | `MDJANGO_CONTENT_DIR` missing or empty | `django.core.exceptions.ImproperlyConfigured` |
 | `MDJANGO_CONTENT_DIR` is not a directory | `mdjango.features.common.exceptions.ContentError` |
 | a `MDJANGO_HEADER_LINKS` dict without `label` or `url` | `KeyError` |
+| `MDJANGO_EXTRA_CSS` neither a string nor an iterable of them | `TypeError` |
 | `MDJANGO_CACHE_SECONDS` not convertible with `int()` | `ValueError` or `TypeError` |
 
 ## Not settings
@@ -61,8 +64,8 @@ first request, as a 500 in a running site or as an error from `mdjango_build`.
   needed to serve the Shell's assets. Order between the two apps does not matter.
 - `STATIC_URL` is used by `mdjango_build` as the prefix of the exported static directory.
 - There is no setting for the maximum tree depth (fixed at three), for disabling search, for the
-  markdown extensions, for a canonical URL, for a logo, or for adding a stylesheet. See
-  [Change the colours and type](../../how-to/change-colours-and-type/) for the stylesheet.
+  markdown extensions, for a canonical URL, or for a logo. (A stylesheet *does* have one now —
+  `MDJANGO_EXTRA_CSS`, above.)
 - There is no base-URL or domain setting. mdjango emits root-relative URLs, so it stays portable
   across mount prefixes. The sitemap needs absolute URLs, so it derives the domain from the request
   at runtime, or from the `mdjango_build --base-url` flag for the static export — never a setting.

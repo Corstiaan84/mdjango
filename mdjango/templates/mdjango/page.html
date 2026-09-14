@@ -1,4 +1,4 @@
-<c-docs.base :title="conf.title" :page_md_url="page_md_url">
+<c-docs.base :title="conf.title" :page_md_url="page_md_url" :extra_css="conf.extra_css">
   <c-docs.header :conf="conf" :breadcrumb="breadcrumb" />
   <div class="docs-backdrop" data-action="disclosure#close"></div>
   <div class="docs-shell{% if not toc %} docs-shell--no-toc{% endif %}">
