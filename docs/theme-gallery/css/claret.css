@@ -1,0 +1,26 @@
+/* Claret — warm rose, crimson accent */
+:root {
+  --background: #fdf6f5;
+  --border: #f0d9d6;
+  --foreground: #2a1a1c;
+  --foreground-subtle: #9a7b7d;
+  --accent: #c02b4e;
+  /* editorial serif; code stays mono via --code-font */
+  --font: "Noto Serif", Georgia, serif;
+}
+:root[data-theme="dark"] {
+  --background: #1e1416;
+  --border: #3a2529;
+  --foreground: #f2e3e4;
+  --foreground-subtle: #a3868a;
+  --accent: #ff6b8a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #1e1416;
+    --border: #3a2529;
+    --foreground: #f2e3e4;
+    --foreground-subtle: #a3868a;
+    --accent: #ff6b8a;
+  }
+}
