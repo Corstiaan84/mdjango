@@ -26,7 +26,7 @@ description: Return a host to the previous release.
 ````
 
 Front-matter is a block of `key: value` lines between two lines that are exactly `---`. It is not
-YAML: no lists, no nesting, no multi-line values. Four keys are read.
+YAML: no lists, no nesting, no multi-line values. Five keys are read.
 
 | Key | Effect |
 |---|---|
@@ -34,6 +34,7 @@ YAML: no lists, no nesting, no multi-line values. Four keys are read.
 | `weight` | position among siblings, lowest first. Default `100`. |
 | `draft` | `true` hides the page unless drafts are included. |
 | `description` | the suffix of the page's `llms.txt` entry. |
+| `updated` | an ISO date (`2024-03-15`) for the page's sitemap `<lastmod>`. Optional; a typo is ignored with a build warning. |
 
 Put an H1 in the body too. The article title is the body's `#` heading, and the `.md` alternate of a
 page without one gets a synthesised heading.

@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
+from datetime import date
+
 import pytest
 
 from ..common.exceptions import ContentError
-from .frontmatter import split_frontmatter
+from .frontmatter import as_date, split_frontmatter
 from .services import RegistryBuilder
 
 
@@ -30,6 +33,34 @@ def test_split_frontmatter_none_when_absent():
     meta, body = split_frontmatter("# Just a heading\n")
     assert meta == {}
     assert body == "# Just a heading\n"
+
+
+def test_as_date_parses_iso_and_rejects_junk():
+    assert as_date("2024-03-15") == date(2024, 3, 15)
+    assert as_date(None) is None
+    assert as_date("") is None
+    assert as_date("last tuesday") is None  # unparseable -> None, never raises
+
+
+def test_updated_frontmatter_parses_to_a_date(tmp_path):
+    write(tmp_path, "a.md", "---\ntitle: A\nupdated: 2024-03-15\n---\n# A\n")
+    assert build(tmp_path).get("a").updated == date(2024, 3, 15)
+
+
+def test_updated_absent_is_none(tmp_path):
+    write(tmp_path, "a.md", "---\ntitle: A\n---\n# A\n")
+    assert build(tmp_path).get("a").updated is None
+
+
+def test_malformed_updated_is_ignored_with_a_warning(tmp_path, caplog):
+    # A typo is not a build error (the tree is trusted); it is dropped and warned about, naming
+    # the file so the author can find it. mtime is deliberately not used as a fallback (ADR 0007).
+    write(tmp_path, "a.md", "---\ntitle: A\nupdated: 15-03-2024\n---\n# A\n")
+    with caplog.at_level(logging.WARNING):
+        reg = build(tmp_path)
+    assert reg.get("a").updated is None
+    assert "unparseable 'updated'" in caplog.text
+    assert "a.md" in caplog.text
 
 
 def test_sections_and_pages_ordered_by_weight(tmp_path):

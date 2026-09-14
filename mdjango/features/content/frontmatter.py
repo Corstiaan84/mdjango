@@ -6,6 +6,8 @@ Anything richer belongs in the body.
 
 from __future__ import annotations
 
+from datetime import date
+
 _BOOL = {"true": True, "yes": True, "on": True, "false": False, "no": False, "off": False}
 
 
@@ -38,3 +40,18 @@ def as_bool(value: str | None, default: bool) -> bool:
     if value is None:
         return default
     return _BOOL.get(value.strip().lower(), default)
+
+
+def as_date(value: str | None) -> date | None:
+    """Parse an ISO-8601 ``YYYY-MM-DD`` date; ``None`` for absent or unparseable input.
+
+    Returns ``None`` on a malformed value rather than raising — the caller decides whether a
+    present-but-unparseable value is worth a warning (the tree is trusted, so a typo should not
+    fail the build).
+    """
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(value.strip())
+    except ValueError:
+        return None

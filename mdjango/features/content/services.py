@@ -24,6 +24,7 @@ lives in the sibling ``frontmatter`` concept module.
 
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
 
@@ -33,6 +34,8 @@ from ...conf import get_conf
 from ..common.exceptions import ContentError
 from . import frontmatter
 from .dtos import Page, Registry, Section, Subsection
+
+log = logging.getLogger(__name__)
 
 INDEX_STEMS = ("_index", "index")
 _H1 = re.compile(r"^\s{0,3}#\s+(.+?)\s*#*\s*$", re.MULTILINE)
@@ -190,6 +193,14 @@ class RegistryBuilder:
     def _read_page(cls, source: Path, path: str) -> Page:
         meta, body = frontmatter.split_frontmatter(source.read_text(encoding="utf-8"))
         title = meta.get("title") or cls._first_h1(body) or cls._humanize(source.stem)
+        raw_updated = meta.get("updated")
+        updated = frontmatter.as_date(raw_updated)
+        if raw_updated and updated is None:
+            log.warning(
+                "ignoring unparseable 'updated' date %r in %s (expected YYYY-MM-DD)",
+                raw_updated,
+                source,
+            )
         return Page(
             path=path,
             title=title,
@@ -198,6 +209,7 @@ class RegistryBuilder:
             draft=frontmatter.as_bool(meta.get("draft"), False),
             source=source,
             body=body,
+            updated=updated,
         )
 
     @staticmethod

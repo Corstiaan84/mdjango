@@ -63,3 +63,7 @@ first request, as a 500 in a running site or as an error from `mdjango_build`.
 - There is no setting for the maximum tree depth (fixed at three), for disabling search, for the
   markdown extensions, for a canonical URL, for a logo, or for adding a stylesheet. See
   [Change the colours and type](../../how-to/change-colours-and-type/) for the stylesheet.
+- There is no base-URL or domain setting. mdjango emits root-relative URLs, so it stays portable
+  across mount prefixes. The sitemap needs absolute URLs, so it derives the domain from the request
+  at runtime, or from the `mdjango_build --base-url` flag for the static export — never a setting.
+  See [Make your docs discoverable](../../how-to/make-docs-discoverable/).

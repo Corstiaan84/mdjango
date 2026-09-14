@@ -14,6 +14,23 @@ The namespace is fixed. Templates and services reverse routes as `mdjango:<name>
 `namespace=` argument to `include()` or mounting the URLconf at two prefixes breaks every internal
 link.
 
+### Serve the docs at the site root
+
+If the site *is* the docs, mount at the root instead of under `docs/`:
+
+```python
+urlpatterns = [
+    # any other root routes (sitemap.xml, robots.txt, admin/, …) FIRST
+    path("", include("mdjango.urls")),  # a catch-all — must come last
+]
+```
+
+The `<path:page_path>/` route matches any path, so the mdjango include has to be the **last**
+pattern: anything you serve at the root — `sitemap.xml`, `robots.txt`, the admin — must be declared
+above it or the page view will shadow it with a 404. Reversed URLs and the export drop the prefix
+accordingly (`mdjango:index` is `/`, a page is `/how-to/deploy/`). This is exactly how mdjango's own
+docs site is mounted.
+
 ## Routes
 
 | Path | Name | Response |
@@ -47,6 +64,14 @@ reverse("mdjango:llms_txt")                                 # /docs/llms.txt
 
 `mdjango.views.page_url(page)` and `mdjango.views.page_markdown_url(page)` do the same from a
 `Page` object, handling the Index page's empty path.
+
+## Sitemap
+
+`sitemap.xml` is **not** a route `mdjango.urls` mounts. mdjango ships the `mdjango.sitemaps.DocsSitemap`
+class; you mount the standard `django.contrib.sitemaps` view at your **site root** (not under the
+docs prefix — a sitemap is a root resource), and Django supplies the domain from the request. See
+[Make your docs discoverable](../../how-to/make-docs-discoverable/). `robots.txt` and `/.well-known/`
+are your site root's concern too and mdjango ships neither.
 
 ## Headers
 

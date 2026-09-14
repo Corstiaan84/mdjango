@@ -7,7 +7,7 @@ description: The management command that validates the Content tree or exports t
 # `mdjango_build`
 
 ```bash
-python manage.py mdjango_build [output_dir] [--check]
+python manage.py mdjango_build [output_dir] [--check] [--base-url URL]
 ```
 
 Validate the Content tree and every page's render without writing, or export the site to a static
@@ -19,6 +19,7 @@ directory. This is the only command mdjango adds. There is no console script.
 |---|---|---|
 | `output_dir` | `dist` | Directory to write into. Created if missing. |
 | `--check` | off | Validate content and render every page without writing. |
+| `--base-url` | none | Site origin (`https://docs.example.com`) for an absolute-URL `sitemap.xml` at the dist root. Omitted: no sitemap is written. |
 
 ## Behaviour
 
@@ -38,7 +39,13 @@ directory. This is the only command mdjango adds. There is no console script.
       `<mount>/index.md` and one `<mount>/…/<page>.md` per Page;
     - `<STATIC_URL>/mdjango/…`, mdjango's own static tree copied whole. An existing directory at
       that destination is removed first. No other app's static files are copied.
-5. Prints `exported N pages + N text files + N static files to <output_dir>`.
+    - with `--base-url`, `sitemap.xml` at the dist **root** (not under `<mount>`) — a sitemap is a
+      site-root resource. Its `<loc>`s are `<base-url>` + each Page's path; a Page with an `updated`
+      date also gets a `<lastmod>`. The machine artifacts are excluded. Without `--base-url` no
+      sitemap is written: the runtime derives its own domain from the request, but the export has no
+      request, so the domain must be supplied here.
+5. Prints `exported N pages + N text files + N static files to <output_dir>`, then `wrote
+   <output_dir>/sitemap.xml` when `--base-url` was given.
 
 `<mount>` and `STATIC_URL` come from the project's URLconf and settings, and the HTML contains them
 as absolute paths. The dist must be served at the same prefixes. Static URLs are whatever

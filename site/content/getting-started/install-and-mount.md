@@ -62,6 +62,9 @@ urlpatterns = [
 ]
 ```
 
+To serve the docs at the site root instead (when the whole site is documentation), mount at `""` —
+see [Serve the docs at the site root](../../reference/urls/#serve-the-docs-at-the-site-root).
+
 ## 5. Write two pages
 
 ```bash
