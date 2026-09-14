@@ -1,12 +1,12 @@
-/* Stripe — cool blue-slate, deep-navy dark, indigo accent, UI sans (aesthetic homage) */
+/* Stripe — cool blue-slate, deep-navy dark, indigo accent, Space Grotesk (grotesque sans) */
 :root {
   --background: #f6f9fc;
   --border: #e3e8ee;
   --foreground: #0a2540;
   --foreground-subtle: #697386;
   --accent: #635bff;
-  /* system UI sans; code stays mono via --code-font */
-  --font: "Segoe UI", "Sohne", Cantarell, system-ui, sans-serif;
+  /* grotesque sans; code stays mono via --code-font */
+  --font: "Space Grotesk", "Sohne", system-ui, sans-serif;
   --font-size: 15px;
 }
 :root[data-theme="dark"] {

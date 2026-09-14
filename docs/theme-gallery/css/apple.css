@@ -1,4 +1,4 @@
-/* Apple — neutral greys, near-black text, blue accent, San-Francisco-style sans (aesthetic homage) */
+/* Apple — neutral greys, near-black text, blue accent, Inter (San-Francisco-style sans) */
 :root {
   --background: #fbfbfd;
   --border: #d2d2d7;
@@ -6,7 +6,7 @@
   --foreground-subtle: #86868b;
   --accent: #0071e3;
   /* code stays mono via --code-font (not a seed); only body/chrome change */
-  --font: -apple-system, "SF Pro Text", "Adwaita Sans", system-ui, sans-serif;
+  --font: "Inter", -apple-system, "SF Pro Text", system-ui, sans-serif;
   --font-size: 15px;
 }
 :root[data-theme="dark"] {
