@@ -7,27 +7,32 @@ visual regression eye-check for the seed contract. **Dev-only:** this tree is ou
 
 ## What's here
 
-- `css/` — six themes. The three colour palettes set only the five **colour** seeds (`--background`,
-  `--border`, `--foreground`, `--foreground-subtle`, `--accent`), keeping the house mono. The three
-  brand palettes also set `--font` (and some `--font-size`). Colours are set for light and both dark
-  selectors; `--font`/`--font-size` sit in the base `:root` (typography does not change by theme).
+- `css/` — six themes, each setting a `--font` so all six render in a **different** typeface (the
+  point: every theme is visibly distinct, and the seed contract is exercised past colour alone).
+  Colours are set for light and both dark selectors; `--font`/`--font-size` sit in the base `:root`
+  (typography does not change by theme). `--code-font` is **not** a seed, so code blocks stay in
+  IBM Plex Mono in every theme.
 - `screenshots/` — each theme light + dark on the `reference/theme-tokens` page (retina, 2×), plus
   two contact sheets (`palettes-contact-sheet.png`, `brands-contact-sheet.png`).
 
-| Theme | Accent | Body font |
-|---|---|---|
-| `ocean` | blue | house mono (IBM Plex Mono) |
-| `claret` | crimson | house mono |
-| `forest` | green | house mono |
-| `apple` | blue | SF-style sans stack — 15px |
-| `tesla` | red | Helvetica-style sans stack — 14px |
-| `stripe` | indigo | UI sans stack — 15px |
+The `--font`s are **system stacks**, not vendored web fonts — mdjango ships only IBM Plex Mono and
+forbids CDN fetches (ADR 0003), so a named web font would silently fall back. The committed
+screenshots were rendered on Linux, which has none of the real brand faces, so each stack names an
+installed family as a fallback to stay visibly distinct here rather than collapsing to one default.
+The **rendered** face below was verified with `CSS.getPlatformFontsForNode` — all six differ:
 
-The brand `--font`s are **system stacks**, not vendored web fonts — mdjango ships only IBM Plex Mono
-and forbids CDN fetches (ADR 0003), so a named web font would silently fall back. `--code-font` is
-not a seed, so code blocks stay mono in every theme. The committed screenshots were rendered on
-Linux, so the exact face is each stack's Linux fallback (Noto Sans / Liberation Sans / Adwaita Sans);
-a viewer with the real face (SF, Helvetica, Segoe UI) sees that instead.
+| Theme | Accent | Intended face | Rendered here (Linux) | Genre |
+|---|---|---|---|---|
+| `ocean` | blue | (system sans) | Noto Sans | humanist sans |
+| `claret` | crimson | (system serif) | Noto Serif | serif |
+| `forest` | green | (system serif) | Liberation Serif | old-style serif (Times) |
+| `apple` | blue | SF Pro Text | Adwaita Sans | Inter-like sans |
+| `tesla` | red | Helvetica Neue | Liberation Sans | Helvetica sans |
+| `stripe` | indigo | Segoe UI / Sohne | Cantarell | geometric sans |
+
+A viewer who has the intended face sees that instead; the fallbacks only make the *demo* legible.
+With only these families installed the split is 4 sans + 2 serif, so `claret` and `forest` share the
+serif genre (different families — a modern serif vs Times); every other pair differs in genre too.
 
 ## How they were generated
 
