@@ -12,10 +12,16 @@
 # minimal static server, dogfooding mdjango's own export. Not yet.
 
 # --- build stage: build the mdjango wheel (hatch-vcs derives the version from git, needs .git) ---
+# git is required at build time: hatch-vcs/setuptools-scm shells out to it, and python:*-slim has
+# no git binary. It lives only in this discarded builder stage, so the runtime image stays lean.
 FROM python:3.14-slim AS builder
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY . .
-RUN pip install --no-cache-dir build \
+RUN git config --global --add safe.directory /src \
+    && pip install --no-cache-dir build \
     && python -m build --wheel --outdir /wheels
 
 # --- runtime stage ------------------------------------------------------------------------------
