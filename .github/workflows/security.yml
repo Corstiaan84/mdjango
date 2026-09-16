@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read # gitleaks lists a PR's commits to scan the incremental range
   security-events: write # gitleaks uploads its SARIF to the Security tab
 
 jobs:
