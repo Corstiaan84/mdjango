@@ -1,7 +1,7 @@
 # mdjango — context
 
-`mdjango` is a reusable, drop-in **markdown documentation Django app** (`pip install
-django-mdjango`, `import mdjango`). A consuming Django project points it at a tree of markdown
+`mdjango` is a reusable, drop-in **markdown documentation Django app** (`pip install mdjango`,
+`import mdjango`). A consuming Django project points it at a tree of markdown
 files and gets a complete, themed documentation site — served at runtime and/or exported static.
 
 This file is a **glossary**, not a spec. Implementation decisions live in `docs/adr/`.

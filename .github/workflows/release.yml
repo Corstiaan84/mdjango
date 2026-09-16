@@ -1,6 +1,6 @@
 name: release
 
-# Build the django-mdjango wheel + sdist and publish to TestPyPI when a version tag (vX.Y.Z, and
+# Build the mdjango wheel + sdist and publish to TestPyPI when a version tag (vX.Y.Z, and
 # pre-release tags like vX.Y.ZrcN) is pushed. hatch-vcs derives the version from the tag. Publishing
 # uses Trusted Publishing (OIDC) — no stored API token. Mirrors walden-cli's release workflow,
 # retargeted at TestPyPI while mdjango is rehearsing its release; switch repository-url to real PyPI
@@ -16,7 +16,7 @@ name: release
 # TestPyPI, like PyPI, refuses to re-upload a version once it exists.
 #
 # One-time setup on TestPyPI before the first release: register this repo + this workflow as a
-# trusted publisher for the `django-mdjango` project (a "pending publisher" works before the
+# trusted publisher for the `mdjango` project (a "pending publisher" works before the
 # project exists).
 
 on:
