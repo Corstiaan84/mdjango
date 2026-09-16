@@ -31,6 +31,7 @@ set in CSS ([theme tokens](../theme-tokens/)), not here — the one setting that
 | `MDJANGO_GITHUB_URL` | `str` | `""` | Renders a header link labelled `github`. Hidden when empty. |
 | `MDJANGO_HEADER_LINKS` | iterable of `{"label": str, "url": str}` dicts or `mdjango.conf.HeaderLink` | `()` | Extra header links, in order, between the `llms.txt` links and the GitHub link. |
 | `MDJANGO_EXTRA_CSS` | `str` or iterable of `str` | `()` | Stylesheet `{% static %}` name(s), linked after mdjango's own sheet — the supported way to override the [seven CSS seeds](../theme-tokens/) without shadowing a template. A string is one file; an iterable is several, in order. See [Change the colours and type](../../how-to/change-colours-and-type/). |
+| `MDJANGO_ASSET_EXTENSIONS` | iterable of `str` | `png jpg jpeg gif svg webp` | Non-markdown file extensions served as [assets](../../how-to/write-a-page/) from the Content tree (case-insensitive, leading dot optional). Defaults to images; set it to widen (e.g. add `pdf`) or narrow what a page can reference beside itself. |
 
 ## LLM artifacts
 

@@ -22,7 +22,7 @@ from mdjango.features.export.services import DistExporter
 from mdjango.features.llm.services import LlmArtifactBuilder
 from mdjango.features.search.services import SearchIndexer
 from mdjango.sitemaps import render_sitemap_xml, sitemap_pages
-from mdjango.views import page_markdown_url, page_url, render_page_html
+from mdjango.views import asset_url, page_markdown_url, page_url, render_page_html
 
 
 class Command(BaseCommand):
@@ -78,6 +78,7 @@ class Command(BaseCommand):
             static_url=settings.STATIC_URL or "/static/",
             static_src=Path(apps.get_app_config("mdjango").path) / "static",
             extra_css=self._extra_css_sources(),
+            assets=[(asset_url(a), a.source) for a in registry.assets],
         )
         self.stdout.write(
             self.style.SUCCESS(

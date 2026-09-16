@@ -41,7 +41,10 @@ Output is HTML5 (`output_format="html"`), tab length 4, one fresh parser per pag
 - `footnotes`, `abbr`, `pymdownx.tasklist`, `pymdownx.tabbed`, `pymdownx.emoji`,
   `pymdownx.arithmatex`.
 - Mermaid or any diagram rendering.
-- Link rewriting. Relative links are emitted as written.
+- Link rewriting for `<a href>` between pages. A relative link to another page is emitted as
+  written. (The one exception is a relative reference — `<img src>` or `<a href>` — that resolves to
+  a content-tree [asset](../../how-to/write-a-page/); that is rewritten to the asset's served URL.
+  A link to another *page* is extensionless and never an asset, so it always passes through.)
 - HTML sanitisation. The Content tree is treated as trusted. Raw HTML in a page, including inside
   `<div markdown="1">`, reaches the browser as written.
 

@@ -18,12 +18,22 @@ mdjango's *real* documentation. It wears the unmodified **House style** — no *
 shadowed **Shell** — so it doubles as the canonical reference mount; the **Override surface** is
 taught in the docs prose, not here. Not shipped in the wheel.
 
-**Content tree** — the directory of markdown files a Consumer points mdjango at. The filesystem
-is the whole source of truth: there is no database, and every published URL comes from a file in
-this tree. It nests at most three levels deep — Section, Subsection, Page (ADR 0004).
+**Content tree** — the directory a Consumer points mdjango at. The filesystem is the whole source
+of truth: there is no database, and every published URL comes from a file in this tree. Markdown
+files become Pages (nesting at most three levels deep — Section, Subsection, Page, ADR 0004);
+whitelisted non-markdown files become Assets (ADR 0008).
 
-**Page** — one markdown document. A Page is the only thing mdjango gives a URL: every URL is a
-Page, and every Page is a file.
+**Page** — one markdown document. A Page is the navigable unit: every *navigable* URL is a Page,
+and every Page is a `.md` file. (Assets also hold URLs but are not Pages — they have no navigation
+entry and are absent from search, the sitemap, and the LLM artifacts.)
+
+**Asset** — a non-markdown file in the Content tree that mdjango serves at a URL **mirroring its
+path** (`how-to/diagram.png` → `<mount>/how-to/diagram.png`). Which extensions count is the
+`MDJANGO_ASSET_EXTENSIONS` whitelist — images out of the box. An Asset is not a Page: a URL, but no
+nav entry, and excluded from search / sitemap / LLM artifacts. A Page references an Asset by a path
+**relative to the Page** (`![](diagram.png)`); mdjango rewrites that reference to the Asset's served
+URL at render time (ADR 0008). The reversal of the earlier "relative links emitted as written"
+stance is deliberate and scoped to `<img>` sources.
 
 **Section** — a top-level grouping of Pages, one immediate subdirectory of the Content tree.
 Sections are the site's map — always visible in the navigation, never collapsed.

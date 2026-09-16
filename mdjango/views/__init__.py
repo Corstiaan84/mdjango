@@ -10,13 +10,17 @@ logic here; the static-export command reuses :func:`page_context` / :func:`rende
 
 from __future__ import annotations
 
+import mimetypes
+from collections.abc import Callable
+from pathlib import Path
+
 from django.http import Http404, HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.generic import View
 
 from ..conf import Conf, get_conf
-from ..features.content.dtos import Page, Registry, Subsection
+from ..features.content.dtos import Asset, Page, Registry, Subsection
 from ..features.content.services import RegistryBuilder
 from ..features.llm.services import LlmArtifactBuilder
 from ..features.rendering.services import Renderer
@@ -38,6 +42,40 @@ def page_markdown_url(page: Page) -> str:
     if page.path == "":
         return reverse("mdjango:index_markdown")
     return reverse("mdjango:page_markdown", args=[page.path])
+
+
+def asset_url(asset: Asset) -> str:
+    """The served URL of a content-tree Asset — the mount prefix + its tree path (ADR 0008)."""
+    return reverse("mdjango:asset", args=[asset.path])
+
+
+def _page_tree_dir(registry: Registry, page: Page) -> str:
+    """The page's directory within the content tree, as a POSIX string ("" at the root).
+
+    A page's relative ``<img>`` references resolve against this, so it is the *filesystem* dir (real
+    directory names), not the slugified URL path — the two can diverge, and an Asset lives on disk.
+    """
+    try:
+        rel = page.source.relative_to(registry.root)
+    except ValueError:
+        return ""
+    parent = rel.parent
+    return "" if parent == Path(".") else parent.as_posix()
+
+
+def asset_resolver(registry: Registry) -> Callable[[str], str | None]:
+    """Build the renderer's seam: a tree-path → served-URL map, ``None`` for a non-Asset.
+
+    This is where the mount prefix (``reverse``) enters, so the renderer never touches HTTP — it
+    resolves a relative ``src`` to a tree path and asks this callable whether that is a known Asset
+    and, if so, at what URL.
+    """
+
+    def resolve(tree_path: str) -> str | None:
+        asset = registry.get_asset(tree_path)
+        return asset_url(asset) if asset is not None else None
+
+    return resolve
 
 
 def _nav_link(page: Page, current_path: str) -> dict:
@@ -110,7 +148,10 @@ def page_context(page: Page) -> dict:
     """The full template context for one page. Shared by runtime views and static export."""
     registry = RegistryBuilder.cached()
     conf = get_conf()
-    rendered = Renderer().render(page.body)
+    rendered = Renderer(
+        asset_resolver=asset_resolver(registry),
+        page_dir=_page_tree_dir(registry, page),
+    ).render(page.body)
     prev, nxt = registry.neighbours(page)
     # The Index page is kept out of the section-nav (registry.children) and re-enters here as the
     # Home link: a pinned link at the top of the left nav, present only when a root _index.md is.
@@ -227,3 +268,22 @@ class PageMarkdownView(RequireLlmDocs, View):
         body = LlmArtifactBuilder(RegistryBuilder.cached()).page_markdown(page)
         cache = ResponseCache()
         return cache.finalize(request, HttpResponse(body, content_type=MARKDOWN_CONTENT_TYPE))
+
+
+class AssetView(View):
+    """Serve one content-tree Asset (ADR 0008) — the catch-all route, last in the URLconf.
+
+    Only paths the registry actually discovered are served: an unknown or non-whitelisted path is a
+    404, which also means a ``../`` traversal can never resolve (the registry holds only files found
+    under the content root). Bytes are read with a guessed content-type and carry the same
+    ``ETag``/``Cache-Control`` as the pages.
+    """
+
+    def get(self, request, asset_path: str) -> HttpResponse:
+        asset = RegistryBuilder.cached().get_asset(asset_path)
+        if asset is None:
+            raise Http404(f"no such asset: {asset_path}")
+        content_type = mimetypes.guess_type(asset.source.name)[0] or "application/octet-stream"
+        cache = ResponseCache()
+        response = HttpResponse(asset.source.read_bytes(), content_type=content_type)
+        return cache.finalize(request, response)

@@ -30,10 +30,10 @@ from pathlib import Path
 
 from django.utils.text import slugify
 
-from ...conf import get_conf
+from ...conf import DEFAULT_ASSET_EXTENSIONS, get_conf
 from ..common.exceptions import ContentError
 from . import frontmatter
-from .dtos import Page, Registry, Section, Subsection
+from .dtos import Asset, Page, Registry, Section, Subsection
 
 log = logging.getLogger(__name__)
 
@@ -50,9 +50,14 @@ class RegistryBuilder:
 
     _cache: Registry | None = None
 
-    def __init__(self, root, *, include_drafts: bool = False):
+    def __init__(self, root, *, include_drafts: bool = False, asset_extensions=None):
         self.root = Path(root)
         self.include_drafts = include_drafts
+        # Non-markdown extensions served as Assets (ADR 0008); lowercase, no dot. Default to images
+        # so a direct constructor call (tests) behaves like the shipped default.
+        self.asset_extensions = frozenset(
+            DEFAULT_ASSET_EXTENSIONS if asset_extensions is None else asset_extensions
+        )
 
     # --- build ---------------------------------------------------------------------------------
 
@@ -95,7 +100,30 @@ class RegistryBuilder:
             pages_by_path=pages_by_path,
             ordered_pages=ordered,
             index_page=index_page,
+            assets_by_path=self._collect_assets(),
         )
+
+    def _collect_assets(self) -> dict[str, Asset]:
+        """Every whitelisted non-markdown file in the tree, keyed by tree-relative POSIX path.
+
+        An independent walk of the whole root (ADR 0008): Assets are files, not navigation, so the
+        three-level nav cap does not constrain them and they may sit in a deeper directory (e.g.
+        ``how-to/images/``). Hidden files and directories are skipped so a stray ``.git`` or editor
+        dir never leaks a URL; extension matching is case-insensitive.
+        """
+        if not self.asset_extensions:
+            return {}
+        assets: dict[str, Asset] = {}
+        for entry in sorted(self.root.rglob("*")):
+            if not entry.is_file():
+                continue
+            rel = entry.relative_to(self.root)
+            if any(part.startswith(".") for part in rel.parts):
+                continue
+            if entry.suffix.lower().lstrip(".") not in self.asset_extensions:
+                continue
+            assets[rel.as_posix()] = Asset(path=rel.as_posix(), source=entry)
+        return assets
 
     def _build_section(self, directory: Path) -> Section:
         section = Section(slug=slugify(directory.name), title="", weight=100)
@@ -233,7 +261,11 @@ class RegistryBuilder:
     def cached(cls) -> Registry:
         conf = get_conf()
         if cls._cache is None or conf.always_rebuild:
-            cls._cache = cls(conf.content_dir, include_drafts=conf.include_drafts).build()
+            cls._cache = cls(
+                conf.content_dir,
+                include_drafts=conf.include_drafts,
+                asset_extensions=conf.asset_extensions,
+            ).build()
         return cls._cache
 
     @classmethod
