@@ -140,6 +140,24 @@ def test_nothing_shipped_fetches_from_an_external_host():
     assert not offenders, "external asset references: " + "; ".join(offenders)
 
 
+def test_the_head_slot_ships_empty():
+    """The head slot (``cotton/docs/head_extra.html``) is the one sanctioned override point for a
+    consumer's own ``<head>`` tags — analytics, site-verification, a preconnect (CONTEXT.md: Head
+    slot; ADR 0003). mdjango must ship it EMPTY: an example ``<script>``/``<link>`` here would put a
+    real tag — worse, an external fetch — into every consumer's head by default, the exact silent
+    regression `test_nothing_shipped_fetches_from_an_external_host` guards. The rendered tags live
+    only in a consumer's shadow copy, never in the package."""
+    slot = TEMPLATES / "cotton" / "docs" / "head_extra.html"
+    assert slot.exists(), f"the head slot is gone: {slot}"
+    body = re.sub(
+        r"\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}",
+        "",
+        slot.read_text(encoding="utf-8"),
+        flags=re.S,
+    )
+    assert not body.strip(), f"the shipped head slot is not empty: {body.strip()!r}"
+
+
 def test_the_default_face_is_vendored_and_every_font_face_resolves(css):
     """@font-face src paths are relative to the stylesheet, so a typo yields a silent fallback
     rather than an error."""

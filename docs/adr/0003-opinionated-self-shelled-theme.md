@@ -109,6 +109,40 @@ prev/next — not just the article body.
   decision 2 — the setting only *loads* the stylesheet, it carries no colour — so this is additive,
   not a reversal. Template shadowing stays the escape hatch for *chrome* (decision 3); it is no
   longer the route for colour and type.
+- **Amendment (2026-09-16): a Consumer injects head content — analytics, a verification `<meta>` —
+  through one sanctioned, empty, shadowable component (`cotton/docs/head_extra.html`, rendered at the
+  end of `<head>`), not through a setting and not by copying `base.html`.** Decision 3 owns the whole
+  shell, and mdjango renders the entire `<html>`/`<head>`, so a Consumer has *no seam* into the head —
+  even at runtime, inside their own Django — without a hook mdjango provides. The need is a
+  third-party tracking `<script>` (external `src`, sometimes with an inline bootstrap, GA4-style).
+  Four shapes were weighed:
+  - **A raw-HTML string setting** (`MDJANGO_HEAD_HTML` + `mark_safe`) — rejected. It carries any
+    snippet and the static export writes it verbatim for free, but it is the first `mark_safe`-on-
+    consumer-input precedent and, being unbounded, silently reopens the "Consumer supplies head
+    chrome" door this ADR shut: today analytics, tomorrow a chat widget or a cookie banner.
+  - **A file-based hook** reusing the `MDJANGO_EXTRA_CSS` static-name→finder→copy machinery —
+    rejected. It can only serve *same-origin* vendored JS; a third-party analytics script must load
+    from the vendor's host, which is the whole point. Fine for a self-hosted script, useless for the
+    stated case.
+  - **A structured provider registry** (`MDJANGO_ANALYTICS = {"provider": …}`) — rejected. It keeps
+    the invariants (no raw HTML, no `mark_safe`, a CSP hint even) but puts mdjango on a maintenance
+    treadmill tracking each provider's snippet, and cannot serve an unnamed/arbitrary tool.
+  - **Shadowing the whole `base.html`** — rejected as the *same* regression the 2026-09-14 amendment
+    killed for CSS: to add one tag a Consumer would reproduce `<title>`, the no-flash script, the
+    stylesheet links, the `MDJANGO_EXTRA_CSS` loop, and the import map — an unversioned chunk mdjango
+    may change in any release.
+
+  The chosen shape is a *scoped* shadow: one tiny component whose entire published contract is "your
+  head tags go here." It is head-only **by construction** (it renders inside `<head>`, so it cannot
+  grow into body chrome the way a raw string would), it needs **no new export code** (the export
+  renders through the Consumer's own loaders, so a shadowed copy lands in the exported HTML, and a
+  third-party snippet already carries the absolute URLs the no-rewrite export needs), and it keeps the
+  no-external-host guard honest — mdjango ships the component **empty**, `test_theme.py` scans it like
+  any shipped template, and `test_the_head_slot_ships_empty` pins the emptiness so an "example"
+  `<script>` can never sneak a real tag (or an external fetch) into every Consumer's head. This is a
+  narrow, deliberate carve-out from the "settings + seven seeds, shadowing unadvertised" stance: the
+  Head slot is now the *one* advertised template seam; all other shadowing stays unadvertised, and a
+  project needing different *chrome* has still outgrown mdjango.
 - **The reset must not out-specify the component rules.** `.docs-body a { color: … }` is (0,1,1)
   and silently beat every single-class rule that colours a link (`.docs-nav-link`,
   `.docs-toc-link`, `.docs-header-link`), rendering the whole sidebar and TOC at full

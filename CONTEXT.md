@@ -67,9 +67,20 @@ text, raised surfaces) and locked, so a Consumer cannot break the internal contr
 the design depends on.
 
 **Shell** — the whole page mdjango renders around the article: header, section-nav, table of
-contents, prev/next. mdjango owns the Shell by default (driven by config) but a Consumer can
-override the base template / header / footer to supply their own chrome. The Shell is part of the
-Theme; it is not the article.
+contents, prev/next. mdjango owns the Shell; it is driven by config, not by the Consumer's markup.
+The Consumer's one sanctioned template seam into the Shell is the **Head slot**; overriding the
+Shell's *chrome* (header, footer, layout) is technically possible but unadvertised — a project
+needing different chrome has outgrown mdjango. The Shell is part of the Theme; it is not the article.
+
+**Head slot** — the single sanctioned template-override point: an otherwise-empty component mdjango
+renders inside the page `<head>`, which a Consumer *shadows* to inject their own head content —
+analytics, a site-verification `<meta>`, a preconnect. It is the secondary route beside the
+**Override surface**: colour and type load through a Seed stylesheet (`MDJANGO_EXTRA_CSS`), while a
+tracking `<script>` or `<link>` — which a setting cannot safely carry — goes here. Head-only by
+construction, and mdjango ships it empty: the external references a tracking tag implies are the
+Consumer's to own, never shipped in the package (so the no-external-host, works-from-disk, strict-CSP
+guarantees stay intact for a Consumer who adds nothing). *Not* a general chrome hook: it cannot reach
+the body, the header, or the layout.
 
 **Home link** — the navigation link to the Index page, pinned at the top of the left nav above
 every Section and labelled with the Index page's title. It exists only when an Index page does. The

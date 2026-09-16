@@ -1,0 +1,13 @@
+{% comment %}
+mdjango head slot — the one sanctioned template-override point.
+
+Ships EMPTY on purpose. A Consumer injects their own <head> content — analytics,
+site-verification meta, a preconnect — by shadowing this component: create
+templates/cotton/docs/head_extra.html in your own project and put your tags here.
+Django's loader order makes your copy win; mdjango's head is otherwise untouched.
+
+Head-only by construction (it renders inside <head>), and mdjango ships nothing
+external here — third-party <script>/<link> tags live in *your* copy, so the
+static export and a strict CSP stay mdjango's job to keep clean, not yours to
+inherit. See CONTEXT.md ("Head slot") and ADR 0003.
+{% endcomment %}

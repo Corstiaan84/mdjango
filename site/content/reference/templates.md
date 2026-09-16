@@ -1,15 +1,18 @@
 ---
 title: Templates
 weight: 60
-description: The page template, the nine cotton components it composes, the context each one reads, and the shipped static assets.
+description: The page template, the ten cotton components it composes, the context each one reads, the head slot a Consumer may override, and the shipped static assets.
 ---
 
 # Templates
 
 mdjango renders every HTML response through one template, `mdjango/page.html`, which composes
 cotton components from `cotton/docs/`. There are no `{% block %}` tags, no `{% extends %}`, no
-template tags and no context processors. The templates are not a customisation surface. What a
-Consumer may change is listed in [settings](../settings/) and [theme tokens](../theme-tokens/).
+template tags and no context processors. The one component a Consumer may override is the **head
+slot** (`head_extra.html`) — shadow it to add analytics or other `<head>` tags; see
+[Add analytics and other head tags](../../how-to/add-head-tags/). Every other template is a closed
+surface. What else a Consumer may change is listed in [settings](../settings/) and
+[theme tokens](../theme-tokens/).
 
 ## Page context
 
@@ -43,7 +46,8 @@ template. "Outer context" is read from the page context without being passed.
 
 | File | Renders | Attributes | Outer context |
 |---|---|---|---|
-| `base.html` | `<!doctype html>` through `</html>`: `<title>`, the `rel="alternate"` link, the no-flash theme script, the `mdjango.css` link, the import map, `<body class="docs-body" data-controller="theme search disclosure">` with `{{ slot }}`, and the `application.js` module | `title`, `page_md_url` (default `""`) | — |
+| `base.html` | `<!doctype html>` through `</html>`: `<title>`, the `rel="alternate"` link, the no-flash theme script, the `mdjango.css` link, the import map, the head slot (`<c-docs.head-extra />`), `<body class="docs-body" data-controller="theme search disclosure">` with `{{ slot }}`, and the `application.js` module | `title`, `page_md_url` (default `""`) | — |
+| `head_extra.html` | nothing — ships empty. A Consumer shadows it to inject `<head>` content (analytics, a verification `<meta>`, a preconnect); rendered at the end of `<head>`. See [Add analytics and other head tags](../../how-to/add-head-tags/) | — | — |
 | `header.html` | hamburger, wordmark, breadcrumb, search trigger, version chip, `llms.txt` links, header links, GitHub link, theme toggle | `conf`, `breadcrumb` | — |
 | `sidebar.html` | `<nav class="docs-sidebar">`: Home link, mobile `llms.txt` group, one group per nav entry with `<details class="docs-nav-sub">` for subgroups | `nav` | `home`, `conf` |
 | `toc.html` | `<nav class="docs-toc docs-toc--{variant}">` with one link per heading, `data-controller="scrollspy"` | `items`, `variant` (default `rail`) | — |
