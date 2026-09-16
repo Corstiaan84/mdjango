@@ -12,6 +12,8 @@
   {% for href in extra_css %}<link rel="stylesheet" href="{% static href %}">{% endfor %}
   {# import map (before any module) points Stimulus at the vendored ESM build — no CDN, no build #}
   <script type="importmap">{"imports":{"@hotwired/stimulus":"{% static 'mdjango/vendor/stimulus.js' %}","minisearch":"{% static 'mdjango/vendor/minisearch.js' %}"}}</script>
+  {# head slot — the one sanctioned override point; ships empty, a consumer shadows it to add analytics/verification tags (CONTEXT.md: Head slot, ADR 0003) #}
+  <c-docs.head-extra />
 </head>
 <body class="docs-body" data-controller="theme search disclosure">
   {{ slot }}
