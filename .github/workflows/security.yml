@@ -1,0 +1,30 @@
+name: security
+
+# Per-change secret scan: gitleaks runs on every pull request and on pushes to main, catching a
+# leaked credential at merge time — long before a release. This is the incremental front line;
+# release.yml runs the same tool over full history as a backstop at tag time. Findings surface in
+# the repo's Security tab (SARIF upload). No GITLEAKS_LICENSE: the action needs one only for GitHub
+# organizations, and this repo is personal.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write # gitleaks uploads its SARIF to the Security tab
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks diffs commit ranges — needs history, not a shallow clone
+
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
