@@ -16,6 +16,11 @@ from pathlib import Path
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+# Non-markdown extensions served as Assets out of the box (ADR 0008) — images only. A Consumer
+# widens or narrows this with MDJANGO_ASSET_EXTENSIONS; the tree is trusted, but the default is a
+# whitelist so a stray non-image file never silently becomes a public URL.
+DEFAULT_ASSET_EXTENSIONS = frozenset({"png", "jpg", "jpeg", "gif", "svg", "webp"})
+
 
 @dataclass(frozen=True)
 class HeaderLink:
@@ -40,6 +45,9 @@ class Conf:
     # override the seven CSS seeds without shadowing base.html (ADR 0003). Values live in the CSS;
     # this only loads it. A later rule of equal specificity wins (the shipped sheet is unlayered).
     extra_css: tuple[str, ...] = field(default_factory=tuple)
+    # Non-markdown file extensions (lowercase, no dot) served as Assets from the content tree
+    # (ADR 0008). Defaults to images; MDJANGO_ASSET_EXTENSIONS overrides.
+    asset_extensions: frozenset[str] = field(default_factory=lambda: DEFAULT_ASSET_EXTENSIONS)
     site_title: str = ""
     # One-line site summary — the blockquote in the LLM artifacts (llms.txt / llms-full.txt).
     description: str = ""
@@ -90,6 +98,13 @@ def get_conf() -> Conf:
         raw_css = (raw_css,)
     extra_css = tuple(str(c) for c in raw_css if str(c).strip())
 
+    # Normalise the asset whitelist: lowercase, strip a leading dot, drop blanks. A default is
+    # supplied so an unset setting still serves images.
+    raw_exts = _get("MDJANGO_ASSET_EXTENSIONS", DEFAULT_ASSET_EXTENSIONS)
+    asset_extensions = frozenset(
+        str(e).lower().lstrip(".").strip() for e in raw_exts if str(e).strip()
+    )
+
     return Conf(
         content_dir=content_dir,
         brand=_get("MDJANGO_BRAND", "docs"),
@@ -98,6 +113,7 @@ def get_conf() -> Conf:
         github_url=_get("MDJANGO_GITHUB_URL", ""),
         header_links=links,
         extra_css=extra_css,
+        asset_extensions=asset_extensions,
         site_title=_get("MDJANGO_SITE_TITLE", ""),
         description=_get("MDJANGO_DESCRIPTION", ""),
         llm_docs=bool(_get("MDJANGO_LLM_DOCS", True)),

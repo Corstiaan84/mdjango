@@ -233,3 +233,63 @@ def test_page_groups_is_the_named_ancestor_trail(tmp_path):
     assert [g.title for g in reg.get("g/sub/deep").groups] == ["G", "Sub"]
     assert [g.title for g in reg.get("g/flat").groups] == ["G"]
     assert reg.get("loose").groups == ()  # a root loose page belongs to no group
+
+
+# --- content-tree assets (ADR 0008) --------------------------------------------------------------
+
+
+def test_assets_discovered_beside_and_below_pages(tmp_path):
+    # An image beside a page and one in a deeper directory are both discovered, keyed by their
+    # tree-relative POSIX path (Assets are not bound by the three-level nav cap).
+    write(tmp_path, "a.md", "---\ntitle: A\n---\n# A\n")
+    (tmp_path / "diagram.png").write_bytes(b"png")
+    (tmp_path / "how-to").mkdir()
+    (tmp_path / "how-to" / "img").mkdir()
+    (tmp_path / "how-to" / "img" / "deep.svg").write_bytes(b"<svg/>")
+
+    reg = build(tmp_path)
+
+    assert set(reg.assets_by_path) == {"diagram.png", "how-to/img/deep.svg"}
+    assert reg.get_asset("how-to/img/deep.svg").source.name == "deep.svg"
+
+
+def test_non_whitelisted_files_are_not_assets(tmp_path):
+    write(tmp_path, "a.md", "---\ntitle: A\n---\n# A\n")
+    (tmp_path / "notes.txt").write_bytes(b"x")
+    (tmp_path / "secret.py").write_bytes(b"x")
+    (tmp_path / "photo.png").write_bytes(b"x")
+
+    reg = build(tmp_path)
+
+    assert set(reg.assets_by_path) == {"photo.png"}  # a stray .txt/.py never becomes a URL
+
+
+def test_asset_whitelist_is_overridable_and_case_insensitive(tmp_path):
+    (tmp_path / "notes.TXT").write_bytes(b"x")
+    (tmp_path / "photo.png").write_bytes(b"x")
+
+    reg = build(tmp_path, asset_extensions={"txt"})
+
+    assert set(reg.assets_by_path) == {"notes.TXT"}  # png dropped, .TXT matched case-insensitively
+
+
+def test_hidden_files_and_dirs_are_skipped(tmp_path):
+    (tmp_path / ".secret.png").write_bytes(b"x")
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".git" / "logo.png").write_bytes(b"x")
+    (tmp_path / "shown.png").write_bytes(b"x")
+
+    reg = build(tmp_path)
+
+    assert set(reg.assets_by_path) == {"shown.png"}
+
+
+def test_assets_are_not_pages(tmp_path):
+    write(tmp_path, "a.md", "---\ntitle: A\n---\n# A\n")
+    (tmp_path / "diagram.png").write_bytes(b"png")
+
+    reg = build(tmp_path)
+
+    assert "diagram.png" not in reg.pages_by_path
+    assert reg.get("diagram.png") is None
+    assert [p.path for p in reg.ordered_pages] == ["a"]  # the asset is absent from nav order

@@ -73,6 +73,19 @@ class Section:
     children: list[Page | Subsection] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class Asset:
+    """A non-markdown file served from the content tree at a URL mirroring its path (ADR 0008).
+
+    Not a Page: it has a URL but no navigation entry, and is absent from search, the sitemap, and
+    the LLM artifacts. ``path`` is the tree-relative POSIX path *including* the extension — the same
+    string a page's relative ``<img>`` reference resolves to, and the tail of its served URL.
+    """
+
+    path: str  # tree-relative posix path incl. extension, e.g. "how-to/diagram.png"
+    source: Path  # the file on disk
+
+
 @dataclass(eq=False)
 class Registry:
     """The whole content tree, built once and held in memory."""
@@ -82,9 +95,17 @@ class Registry:
     pages_by_path: dict[str, Page]
     ordered_pages: list[Page]  # flattened nav order, for prev/next
     index_page: Page | None
+    assets_by_path: dict[str, Asset] = field(default_factory=dict)
 
     def get(self, path: str) -> Page | None:
         return self.pages_by_path.get(path.strip("/"))
+
+    def get_asset(self, path: str) -> Asset | None:
+        return self.assets_by_path.get(path.strip("/"))
+
+    @property
+    def assets(self) -> list[Asset]:
+        return list(self.assets_by_path.values())
 
     def neighbours(self, page: Page) -> tuple[Page | None, Page | None]:
         """The (previous, next) pages in flattened nav order, for the pager.
