@@ -619,6 +619,33 @@ body.docs-body {
 .article img {
   max-width: 100%;
 }
+.article figure {
+  margin: 1.5rem 0;
+}
+.article figure > a {
+  display: block;
+  border-bottom: none;
+}
+.article figure img {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.article figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8571rem;
+  color: var(--foreground-muted);
+  text-align: center;
+}
+.article .compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.article .compare figure {
+  margin: 0;
+}
 .article table {
   width: 100%;
   border-collapse: collapse;

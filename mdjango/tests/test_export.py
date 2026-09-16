@@ -99,3 +99,21 @@ def test_llm_docs_off_skips_the_llm_artifacts(tmp_path, settings):
     assert not (out / "llms-full.txt").exists()
     assert not (out / "index.md").exists()
     assert not (out / "getting-started" / "quickstart.md").exists()
+
+
+def test_build_copies_content_assets_and_rewrites_srcs(tmp_path, settings):
+    content = tmp_path / "content"
+    (content / "how-to").mkdir(parents=True)
+    (content / "_index.md").write_text("---\ntitle: Home\n---\n# Home\n", encoding="utf-8")
+    (content / "how-to" / "g.md").write_text(
+        "---\ntitle: G\n---\n# G\n\n![d](diagram.png)\n", encoding="utf-8"
+    )
+    (content / "how-to" / "diagram.png").write_bytes(b"\x89PNG-fake-bytes")
+    settings.MDJANGO_CONTENT_DIR = content
+
+    out = tmp_path / "dist"
+    call_command("mdjango_build", str(out))
+
+    # the asset is copied at its mirrored URL, and the exported page points at it
+    assert (out / "how-to" / "diagram.png").read_bytes() == b"\x89PNG-fake-bytes"
+    assert 'src="/how-to/diagram.png"' in (out / "how-to" / "g" / "index.html").read_text()

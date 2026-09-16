@@ -535,6 +535,38 @@ body.docs-body {
 .article img {
   max-width: 100%;
 }
+/* figures — an author affordance for captioned images and image comparisons (ADR 0008). A plain
+   `<figure><img><figcaption>` gets a centred image and a muted caption; a linked image
+   (`<a><img></a>`, the click-to-enlarge idiom) keeps the same box. */
+.article figure {
+  margin: 1.5rem 0;
+}
+.article figure > a {
+  display: block;
+  border-bottom: none;
+}
+.article figure img {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.article figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8571rem;
+  color: var(--foreground-muted);
+  text-align: center;
+}
+/* an image-comparison row: two or more figures laid side by side, wrapping when narrow (e.g. a
+   light/dark or before/after pair). One general primitive — page-specific galleries compose it. */
+.article .compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.article .compare figure {
+  margin: 0;
+}
 .article table {
   width: 100%;
   border-collapse: collapse;

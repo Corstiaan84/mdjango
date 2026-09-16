@@ -91,17 +91,29 @@ Writing `](../how-to/rollback/)` from `how-to/deploy.md` doubles the segment and
 rewrites links and there is no redirect table. Moving a page breaks every link aimed at it until you
 update them.
 
-## Reference images by URL
+## Add an image
 
-Only `.md` files in the Content tree are read. Images and other files placed beside a page are
-ignored and never served. Put them in your project's static files and link them by their served
-URL:
+Put the image **beside the page** in the Content tree and reference it with a path relative to the
+page. mdjango serves it and rewrites the link to its URL — at runtime and in the static export:
 
 ```markdown
-![Deploy pipeline](/static/acme/pipeline.svg)
+![A deploy pipeline](diagram.png)
 ```
 
-Markdown is not a Django template. `{% static %}` is not evaluated in a page.
+The reference is relative to the page's own directory, so `images/diagram.png` and
+`../shared/logo.svg` work too. Images out of the box means `png`, `jpg`/`jpeg`, `gif`, `svg`, `webp`
+— widen or narrow that with [`MDJANGO_ASSET_EXTENSIONS`](../../reference/settings/). Any other file
+type (and any `.md`) is left alone: it is not served, and a reference to it is emitted unchanged.
+
+To make an image **click to enlarge**, link it to itself — a plain link, no JavaScript:
+
+```markdown
+[![A deploy pipeline](diagram.png)](diagram.png)
+```
+
+Markdown is not a Django template: `{% static %}` is not evaluated in a page, and an *absolute* URL
+(`/static/…` or `https://…`) is always emitted as written, so a shared asset your project already
+serves still works.
 
 ## Check the result
 

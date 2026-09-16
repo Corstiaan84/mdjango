@@ -357,3 +357,47 @@ def test_server_cache_skips_rerender_on_the_second_hit(client, settings):
     with mock.patch.object(rs.Renderer, "render") as render:
         client.get("/guides/secrets/")
     assert render.call_count == 0  # served from the cached HTML string, no re-render
+
+
+# --- content-tree assets (ADR 0008) --------------------------------------------------------------
+
+_FAKE_PNG = b"\x89PNG\r\n\x1a\n-not-a-real-png-but-served-verbatim"
+
+
+def _asset_tree(root):
+    d = root / "how-to"
+    d.mkdir(parents=True, exist_ok=True)
+    (root / "_index.md").write_text("---\ntitle: Home\n---\n# Home\n", encoding="utf-8")
+    (d / "guide.md").write_text(
+        "---\ntitle: Guide\n---\n# Guide\n\n![A diagram](diagram.png)\n", encoding="utf-8"
+    )
+    (d / "diagram.png").write_bytes(_FAKE_PNG)
+    return root
+
+
+def test_asset_is_served_with_content_type_and_etag(client, settings, tmp_path):
+    settings.MDJANGO_CONTENT_DIR = _asset_tree(tmp_path / "c")
+    RegistryBuilder.clear_cache()
+
+    r = client.get("/how-to/diagram.png")
+
+    assert r.status_code == 200
+    assert r["Content-Type"] == "image/png"
+    assert r.content == _FAKE_PNG
+    assert r.has_header("ETag")
+
+
+def test_unknown_asset_is_404(client, settings, tmp_path):
+    settings.MDJANGO_CONTENT_DIR = _asset_tree(tmp_path / "c")
+    RegistryBuilder.clear_cache()
+
+    assert client.get("/how-to/missing.png").status_code == 404
+
+
+def test_page_image_src_is_rewritten_to_the_served_url(client, settings, tmp_path):
+    settings.MDJANGO_CONTENT_DIR = _asset_tree(tmp_path / "c")
+    RegistryBuilder.clear_cache()
+
+    body = client.get("/how-to/guide/").content.decode()
+
+    assert 'src="/how-to/diagram.png"' in body  # relative ![](diagram.png) rewritten absolute
