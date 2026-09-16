@@ -9,7 +9,8 @@ description: Point MDJANGO_EXTRA_CSS at a stylesheet that sets the seven CSS see
 **Goal:** give the docs your palette, typeface and base size without touching the layout.
 
 **You need:** a static directory your project serves. The token names and shipped defaults are in
-the [theme tokens reference](../../reference/theme-tokens/).
+the [theme tokens reference](../../reference/theme-tokens/). For six worked examples of what the
+seeds express, light and dark, see the [theme gallery](../../explanation/theme-gallery/).
 
 ## 1. Point mdjango at your stylesheet
 
