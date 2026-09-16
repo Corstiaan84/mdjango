@@ -16,7 +16,7 @@ no database tables, so there are no migrations to run.
 ## 1. Install the package
 
 ```bash
-pip install django-mdjango
+pip install mdjango
 ```
 
 > mdjango is pre-release. Until the first release is published this command installs nothing from

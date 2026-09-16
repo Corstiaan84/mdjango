@@ -1,23 +1,34 @@
 name: release
 
-# Build the django-mdjango wheel + sdist and publish to TestPyPI when a version tag (vX.Y.Z) is
-# pushed. hatch-vcs derives the version from the tag. Publishing uses Trusted Publishing (OIDC) —
-# no stored API token. Mirrors walden-cli's release workflow, retargeted at TestPyPI while mdjango
-# is rehearsing its release; switch repository-url to real PyPI (and register the publisher there)
-# when promoting.
+# Build the mdjango wheel + sdist and publish to TestPyPI when a version tag (vX.Y.Z, and
+# pre-release tags like vX.Y.ZrcN) is pushed. hatch-vcs derives the version from the tag. Publishing
+# uses Trusted Publishing (OIDC) — no stored API token. Mirrors walden-cli's release workflow,
+# retargeted at TestPyPI while mdjango is rehearsing its release; switch repository-url to real PyPI
+# (and register the publisher there) when promoting.
+#
+# gitleaks runs first as a release gate: full-history secret scan, and a leak aborts the run before
+# anything is built or published. (release.yml is only ever entered on a tag push — where
+# github.event.before is all-zeros — or workflow_dispatch; gitleaks-action treats both as a
+# full-history scan, which is the thorough backstop behind the per-PR scan in security.yml.)
+#
+# workflow_dispatch runs a dry run: scan + build + `twine check`, but NOT publish (the publish step
+# is gated on a tag push). Use it to validate an untested change without spending a version tag —
+# TestPyPI, like PyPI, refuses to re-upload a version once it exists.
 #
 # One-time setup on TestPyPI before the first release: register this repo + this workflow as a
-# trusted publisher for the `django-mdjango` project (a "pending publisher" works before the
+# trusted publisher for the `mdjango` project (a "pending publisher" works before the
 # project exists).
 
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch: {} # dry run: scan + build + twine check, no publish
 
 permissions:
   contents: read
   id-token: write # required for Trusted Publishing (OIDC)
+  security-events: write # gitleaks uploads its SARIF to the Security tab
 
 jobs:
   release:
@@ -26,6 +37,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # hatch-vcs derives the version from tags — needs full history + tags
+
+      - name: Scan for secrets (release gate)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No GITLEAKS_LICENSE: the action requires one only for GitHub organizations; this repo
+          # is personal, so the scan runs free.
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -36,7 +54,11 @@ jobs:
       - name: Build the wheel + sdist
         run: uv build
 
+      - name: Check package metadata
+        run: uvx twine check dist/*
+
       - name: Publish to TestPyPI (trusted publishing)
+        if: github.event_name == 'push' # dry runs (workflow_dispatch) stop before publishing
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/

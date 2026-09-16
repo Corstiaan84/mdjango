@@ -1,6 +1,6 @@
 # CLAUDE.md — mdjango
 
-A reusable, drop-in markdown-documentation Django app (`pip install django-mdjango`, `import
+A reusable, drop-in markdown-documentation Django app (`pip install mdjango`, `import
 mdjango`). See `CONTEXT.md` for the glossary, `docs/adr/` for decisions, `design/BUILD-PLAN.md` for
 the implementation plan.
 

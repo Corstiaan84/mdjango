@@ -13,7 +13,7 @@ opinionated house style; seven CSS seeds to make it yours. See `CONTEXT.md` for 
 ## Install (consumer)
 
 ```bash
-pip install django-mdjango
+pip install mdjango
 ```
 
 Then, in a consuming Django project:

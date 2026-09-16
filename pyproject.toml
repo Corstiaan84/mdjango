@@ -1,5 +1,5 @@
 [project]
-name = "django-mdjango"
+name = "mdjango"
 dynamic = ["version"]
 description = "A reusable, drop-in markdown-documentation Django app: point it at a tree of markdown and get a themed docs site, served at runtime or exported static."
 readme = "README.md"
