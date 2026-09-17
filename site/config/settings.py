@@ -11,8 +11,6 @@ is shipped in the wheel.
 import os
 from pathlib import Path
 
-import mdjango
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -70,8 +68,8 @@ USE_TZ = True
 MDJANGO_CONTENT_DIR = BASE_DIR / "content"
 MDJANGO_BRAND = "mdjango"
 MDJANGO_HOME_URL = "/"
-# The version chip is a display string; here it tracks the package, which a consumer's would not.
-MDJANGO_VERSION = f"v{mdjango.__version__}"
+# The version chip is a display string. Set via env var in the container; empty (hidden) otherwise.
+MDJANGO_VERSION = os.environ.get("MDJANGO_VERSION", "")
 MDJANGO_GITHUB_URL = "https://github.com/Corstiaan84/mdjango"
 MDJANGO_SITE_TITLE = "mdjango docs"
 # The one-line summary that heads the LLM artifacts (llms.txt / llms-full.txt).
