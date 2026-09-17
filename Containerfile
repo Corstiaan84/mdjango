@@ -52,4 +52,4 @@ EXPOSE 8000
 # Worker count is a deploy-time concern (each worker holds its own in-memory registry, ADR 0001) —
 # gunicorn reads WEB_CONCURRENCY natively, so walden sets it per host without an image rebuild;
 # WEB_CONCURRENCY=2 above is the default. --threads adds in-worker I/O concurrency for static.
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--threads", "4"]
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--threads", "4", "--access-logfile", "-"]
