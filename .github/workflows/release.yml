@@ -1,10 +1,8 @@
 name: release
 
-# Build the mdjango wheel + sdist and publish to TestPyPI when a version tag (vX.Y.Z, and
-# pre-release tags like vX.Y.ZrcN) is pushed. hatch-vcs derives the version from the tag. Publishing
-# uses Trusted Publishing (OIDC) — no stored API token. Mirrors walden-cli's release workflow,
-# retargeted at TestPyPI while mdjango is rehearsing its release; switch repository-url to real PyPI
-# (and register the publisher there) when promoting.
+# Build the mdjango wheel + sdist and publish to PyPI when a version tag (vX.Y.Z, and pre-release
+# tags like vX.Y.ZrcN) is pushed. hatch-vcs derives the version from the tag. Publishing uses
+# Trusted Publishing (OIDC) — no stored API token. (Rehearsed against TestPyPI first; see history.)
 #
 # gitleaks runs first as a release gate: full-history secret scan, and a leak aborts the run before
 # anything is built or published. (release.yml is only ever entered on a tag push — where
@@ -12,12 +10,12 @@ name: release
 # full-history scan, which is the thorough backstop behind the per-PR scan in security.yml.)
 #
 # workflow_dispatch runs a dry run: scan + build + `twine check`, but NOT publish (the publish step
-# is gated on a tag push). Use it to validate an untested change without spending a version tag —
-# TestPyPI, like PyPI, refuses to re-upload a version once it exists.
+# is gated on a tag push). Use it to validate a change without spending a version tag — PyPI refuses
+# to re-upload a version once it exists.
 #
-# One-time setup on TestPyPI before the first release: register this repo + this workflow as a
-# trusted publisher for the `mdjango` project (a "pending publisher" works before the
-# project exists).
+# A `v*` tag publishes to PyPI, pre-release tags (rc/a/b) included, which PyPI marks as pre-releases
+# (pip skips them unless asked). Trusted publishing requires this repo + this workflow (release.yml,
+# no environment) registered as the publisher for the `mdjango` project on PyPI.
 
 on:
   push:
@@ -57,8 +55,7 @@ jobs:
       - name: Check package metadata
         run: uvx twine check dist/*
 
-      - name: Publish to TestPyPI (trusted publishing)
+      - name: Publish to PyPI (trusted publishing)
         if: github.event_name == 'push' # dry runs (workflow_dispatch) stop before publishing
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
+        # No repository-url: the action defaults to PyPI (https://upload.pypi.org/legacy/).

@@ -5,10 +5,11 @@ a themed documentation site — served at runtime, or exported static with `mdja
 opinionated house style; seven CSS seeds to make it yours. See `CONTEXT.md` for the glossary and
 `docs/adr/` for the decisions.
 
-> Status: **pre-release** (`0.1.0.dev0`, not yet on PyPI). Runtime serving, the render/registry
-> core, the self-shelled theme, dark mode, code-copy, scroll-spy, MiniSearch, the `llms.txt`
-> artifacts, response caching and the static export all work end-to-end. The full documentation
-> lives in `site/content/` and is what the `site/` project serves (ADR 0006).
+> Status: **0.1.0** — the first public release, on PyPI (`pip install mdjango`); a 0.x line, so the
+> API may still change. Runtime serving, the render/registry core, the self-shelled theme, dark
+> mode, code-copy, scroll-spy, MiniSearch, the `llms.txt` artifacts, response caching and the static
+> export all work end-to-end. The full documentation lives in `site/content/` and is what the
+> `site/` project serves (ADR 0006).
 
 ## Install (consumer)
 
