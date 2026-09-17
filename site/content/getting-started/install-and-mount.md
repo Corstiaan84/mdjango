@@ -19,9 +19,6 @@ no database tables, so there are no migrations to run.
 pip install mdjango
 ```
 
-> mdjango is pre-release. Until the first release is published this command installs nothing from
-> PyPI. Install from a checkout with `pip install -e .` instead.
-
 The package depends on Django, `Markdown`, `pymdown-extensions`, `Pygments` and `django-cotton`.
 
 ## 2. Register the apps
