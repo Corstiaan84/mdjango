@@ -71,7 +71,7 @@ MDJANGO_HOME_URL = "/"
 # The version chip is a display string. Set via env var in the container; empty (hidden) otherwise.
 MDJANGO_VERSION = os.environ.get("MDJANGO_VERSION", "")
 MDJANGO_GITHUB_URL = "https://github.com/Corstiaan84/mdjango"
-MDJANGO_SITE_TITLE = "mdjango docs"
+MDJANGO_SITE_TITLE = os.environ.get("MDJANGO_SITE_TITLE", "")
 # The one-line summary that heads the LLM artifacts (llms.txt / llms-full.txt).
 MDJANGO_DESCRIPTION = (
     "A drop-in Django app that renders a tree of markdown into a documentation site."
