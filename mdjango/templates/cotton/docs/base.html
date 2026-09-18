@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ title }}</title>
+    <title>{% if page.title %}{{ page.title }} - {% endif %}{{ title }}</title>
   {% if page_md_url %}<link rel="alternate" type="text/markdown" href="{{ page_md_url }}" title="Markdown source">{% endif %}
   {# no-flash: set the theme before first paint, paired with the `theme` controller #}
   <script>(function(){try{var t=localStorage.getItem('mdjango-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
